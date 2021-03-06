@@ -1,0 +1,10 @@
+Error: Crush your bugs!
+ at e.onButtonClick (http://localhost:8080/main.24d8f13b99010f73891a.js:1:141012)
+ at http://localhost:8080/main.24d8f13b99010f73891a.js:1:141549
+ at Fo (http://localhost:8080/main.24d8f13b99010f73891a.js:1:71933) 
+ at i (http://localhost:8080/main.24d8f13b99010f73891a.js:1:72095) 
+ at HTMLButtonElement.<anonymous> (http://localhost:8080/main.24d8f13b99010f73891a.js:1:131595) ate.invokeTask (http://localhost:8080/polyfills.325a4ec1188237bc4fef.js:1:8173) 
+ at Object.onInvokeTask (http://localhost:8080/main.24d8f13b99010f73891a.js:1:103972) 
+ at e.invokeTask (http://localhost:8080/polyfills.325a4ec1188237bc4fef.js:1:8094) 
+ at t.runTask (http://localhost:8080/polyfills.325a4ec1188237bc4fef.js:1:3252) 
+ at t.invokeTask [as invoke] (http://localhost:8080/polyfills.325a4ec1188237bc4fef.js:1:9305)
