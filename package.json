@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "runScript": "ts-node",
-    "t": "ts-node t.ts"
+    "t": "ts-node scripts/t.ts"
   },
   "dependencies": {
     "fs-extra": "^9.1.0",
