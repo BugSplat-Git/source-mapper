@@ -15,14 +15,8 @@ const underlineString = (str: string) => str + "\n" + '-'.repeat(str.length);
         const stackFile = process.argv[3];
 
         const converter = new StackConverter(mapfile);
-        const failure = await converter.init();
-        if (failure) {
-            console.log(`could not initialize stackconverter with file ${mapfile}`);
-            process.exit(1);
-        }
-
+        await converter.init();
         const stackString = fs.readFileSync(stackFile, 'utf-8');
-
         const newStackString = converter.convert(stackString);
         console.log(underlineString('newStackString'));
         console.log(newStackString);

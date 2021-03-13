@@ -33,19 +33,19 @@ export class StackConverter {
      * init - initialize the stack converter given that the mapfile was already set.
      * @return: a string with the error or undefined on success.
      */
-    public async init(): Promise<string | undefined> {
+    public async init(): Promise<void> {
         if (!this.mapFile) {
-            return 'cannot init, no map file specified.';
+            throw new Error('could not initialize StackConverter, mapFile not set');
         }
         const fileData = await fs.readFile(this.mapFile, 'utf-8');
         const parsedSourceMap = JSON.parse(fileData);
         this.sourceMapConsumer = await new SourceMapConsumer(parsedSourceMap);
 
         if (!this.sourceMapConsumer) {
-            return `cannot init, error loading source map file ${this.mapFile}`;
+            throw new Error(`cannot init, error loading source map file ${this.mapFile}`);
         }
         this.initialized = true;
-        return undefined;
+        return;
     }
 
     /**
