@@ -1,7 +1,6 @@
-import { StackConverter } from "../src/stackconverter";
 import * as fs from "fs";
 import * as path from "path";
-import { doesNotMatch } from "node:assert";
+import { StackConverter } from "../src/stackconverter";
 
 const TESTING_DIR = "__tests__"
 const TESTING_DATA_DIR = path.join(TESTING_DIR, "test-data");
