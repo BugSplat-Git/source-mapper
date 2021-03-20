@@ -8,14 +8,13 @@ const TESTING_DATA_DIR = path.join(TESTING_DIR, "test-data");
 describe("StackConverter tests", () => {
   describe("convert", () => {
     test("converting empty stack string should result in empty string", async () => {
-        try {
+        await expect(async() => {
           const emptyJsMapPath = path.join(TESTING_DATA_DIR, "empty.js.map");
           const stackConverter = new StackConverter(emptyJsMapPath);
           await stackConverter.init();
-          fail("initializing StackConverter with empty source map was supposed to throw!");
-        } catch (error) {
-          expect(error.message).toMatch(/Unexpected token . in JSON at position 0/);
-        }
+        })
+          .rejects
+          .toThrow(/Unexpected token . in JSON at position 0/)
     });
 
     test("read in stack-1 map file and convert stack-1 sample data", async () => {
