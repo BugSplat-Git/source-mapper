@@ -1,9 +1,7 @@
-// import * as meow from 'meow';
-
-// import { meow } from 'meow';
 import * as stackTraceParser from 'stacktrace-parser';
 import {SourceMapConsumer} from 'source-map';
-import * as fs from "fs-extra";
+import * as fs from "fs";
+
 
 /**
  * A class for converting stacktraces, mangled by transpiling, back to match the originating files.
@@ -37,7 +35,10 @@ export class StackConverter {
         if (!this.mapFile) {
             throw new Error('could not initialize StackConverter, mapFile not set');
         }
-        const fileData = await fs.readFile(this.mapFile, 'utf-8');
+        const fileData = fs.readFileSync(this.mapFile, {
+            encoding: "utf8",
+            flag: "r",
+        });
         const parsedSourceMap = JSON.parse(fileData);
         this.sourceMapConsumer = await new SourceMapConsumer(parsedSourceMap);
 
