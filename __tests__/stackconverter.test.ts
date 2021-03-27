@@ -1,27 +1,29 @@
-import { StackConverter } from "../src/stackconverter";
 import * as fs from "fs";
+import * as path from "path";
+import { StackConverter } from "../src/stackconverter";
 
 const TESTING_DIR = "__tests__"
-const TESTING_DATA_DIR = TESTING_DIR + "/test-data";
+const TESTING_DATA_DIR = path.join(TESTING_DIR, "test-data");
 
 describe("StackConverter tests", () => {
   describe("convert", () => {
-    test("test converting an empty stack", async () => {
-        expect(async () => {
-            const stackConverter = new StackConverter(TESTING_DATA_DIR + "/empty.js.map");
-            const initResults = await stackConverter.init();
-            // expect(initResults);
-            stackConverter.convert("");
-        }).toThrow(new SyntaxError('Unexpected end of JSON input'))
+    test("converting empty stack string should result in empty string", async () => {
+        await expect(async() => {
+          const emptyJsMapPath = path.join(TESTING_DATA_DIR, "empty.js.map");
+          const stackConverter = new StackConverter(emptyJsMapPath);
+          await stackConverter.init();
+        })
+          .rejects
+          .toThrow(/Unexpected token . in JSON at position 0/)
     });
 
     test("read in stack-1 map file and convert stack-1 sample data", async () => {
       const baseFile = "stack-1";
-      const stackConverter = new StackConverter(
-        "__tests__/test-data/${baseFile}.js.map"
-      );
+      const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
+      const stackConverter = await new StackConverter(mapFilePath);
       await stackConverter.init();
-      const stackText = fs.readFileSync("__tests__/test-data/${baseFile}.txt", {
+      const stackFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
+      const stackText = fs.readFileSync(stackFilePath, {
         encoding: "utf8",
         flag: "r",
       });
@@ -42,11 +44,11 @@ describe("StackConverter tests", () => {
 
     test("read in stack-2 map file and convert to stack-2 sample data", async () => {
       const baseFile = "stack-2";
-      const stackConverter = new StackConverter(
-        `__tests__/test-data/${baseFile}.js.map`
-      );
+      const mapFilePath =  path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
+      const stackConverter = new StackConverter(mapFilePath);
       await stackConverter.init();
-      const stackText = fs.readFileSync(`__tests__/test-data/${baseFile}.txt`, {
+      const stackFile = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
+      const stackText = fs.readFileSync(stackFile, {
         encoding: "utf8",
         flag: "r",
       });
