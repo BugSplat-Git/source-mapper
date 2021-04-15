@@ -98,8 +98,8 @@ describe("StackConverter tests", () => {
 
       const { error } = await stackConverter.init();
       expect(error).toBeDefined();
-      expect(error).toMatchInlineSnapshot(
-        `"ENOENT: no such file or directory, lstat 'C:\\\\Users\\\\Craig\\\\OneDrive\\\\src\\\\bugsplat\\\\stackconverter\\\\__tests__\\\\test-data\\\\file-doesnt-exist'"`
+      expect(error).toMatch(
+        /ENOENT: no such file or directory, lstat '.*__tests__[\\|\/]test-data[\\|\/]file-doesnt-exist/
       );
     });
 
@@ -110,8 +110,8 @@ describe("StackConverter tests", () => {
 
       const { error } = await stackConverter.init();
       expect(error).toBeDefined();
-      expect(error).toMatchInlineSnapshot(
-        `"there are no map files in directory __tests__\\\\test-data\\\\dir-exists-no-map-files"`
+      expect(error).toMatch(
+        /there are no map files in directory __tests__[\\|\/]test-data[\\|\/]dir-exists-no-map-files/
       );
     });
 
