@@ -48,7 +48,7 @@ describe("StackConverter tests", () => {
     test("read in stack-1 map file and convert stack-1 sample data", async () => {
       const baseFile = "stack-1";
       const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
-      const stackConverter = await new StackConverter(mapFilePath);
+      const stackConverter = new StackConverter(mapFilePath);
       await stackConverter.init();
       const stackFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
       const stackText = readStack(stackFilePath);
