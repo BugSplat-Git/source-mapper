@@ -1,4 +1,4 @@
-import {StackConverter} from "../src/stackconverter";
+import { StackConverter } from "../src/stackconverter";
 import * as fs from "fs";
 
 
