@@ -4,3 +4,5 @@
 
 js/*.map
 js/ts.js
+
+yarn-error.log
