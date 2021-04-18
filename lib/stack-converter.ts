@@ -46,15 +46,15 @@ export class StackConverter {
 
     /**
      * Converts the file names and line numbers of a stack trace using the corresponding source maps
-     * @param stackString - a string representation of a stack trace from a Error object
+     * @param stack - a string representation of a stack trace from a Error object
      * @returns - promise that resolves to an object that contains an error or a stack
      */
-    async convert(stackString: string): Promise<{error?: string, stack?: string}> {
-        if (!stackString) {
+    async convert(stack: string): Promise<{error?: string, stack?: string}> {
+        if (!stack) {
             return { stack: '' };
         }
 
-        const stackFrames = stackTraceParser.parse(stackString);
+        const stackFrames = stackTraceParser.parse(stack);
         if (stackFrames.length == 0) {
             return { error: 'No stack frames found in stackString' };
         }
@@ -74,7 +74,7 @@ export class StackConverter {
             if (!lineNumber && !column) {
                 // handle case where <anonymous> is returned as file with no lineNumber or column
                 buff.push(StackConverter.frameLine(methodName, file, lineNumber, column));
-                continue
+                continue;
             }
 
             const mapFile = this.sourceMapFilePaths.find(mapFilePath => mapFilePath.includes(`${path.basename(file)}.map`));
@@ -107,7 +107,7 @@ export class StackConverter {
 
                 const originalPosition = sourceMapConsumer.originalPositionFor({ line: lineNumber, column });
                 if (!originalPosition || !originalPosition.line) {
-                    const comment = StackConverter.couldNotConvertStackFrameComment('original position not found')
+                    const comment = StackConverter.couldNotConvertStackFrameComment('original position not found');
                     buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
                     continue;
                 }

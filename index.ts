@@ -1,0 +1,1 @@
+export { StackConverter } from './lib/stack-converter';
