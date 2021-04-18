@@ -3,195 +3,163 @@ import { get, set } from 'lodash';
 import * as path from "path";
 import { SourceMapConsumer } from 'source-map';
 import * as stackTraceParser from 'stacktrace-parser';
-import { StackFrame } from "stacktrace-parser";
 
 /**
  * A class for converting stacktraces, mangled by transpiling, back to match the originating files.
- * usage:
- *    const converter = new StackConverter('a-sourceMap-file.js.sourceMap');
- *    await converter.init();
- *    const mangedStack = '....';
- *    const newStack = converter.convert(managedStack);
+ * Usage:
+ *    const converter = new StackConverter(['a-sourceMap-file.js.sourceMap']);
+ *    const mangledStack = '....';
+ *    const newStack = await converter.convert(managedStack);
  */
 export class StackConverter {
-    readonly fileName: string;
-    private sourceMapConsumer: SourceMapConsumer;
-    private initialized: boolean;
-    private fromDirectory: boolean;
+    private static readonly INDENT: string = '    ';
 
     /**
-     * Create a StackConverter passing in the name of the mapfile.
-     * @param fileName - the path to the mapfile for converting stacks.
+     * Create a StackConverter by passing an array of paths to source map files
+     * @param sourceMapFilePaths - an array of paths to source map files for converting stacks
+     * @throws - throws if no sourceMapFilePaths are provided
      */
-    constructor(
-        fileName: string
-    ) {
-        this.fileName = fileName;
-        this.initialized = false;
+    constructor(private sourceMapFilePaths: Array<string>) {
+        if (!sourceMapFilePaths?.length) {
+            throw new Error(`Could not create StackConverter: no source map file paths were provided!`);
+        }
     }
 
     /**
-     * init - initialize the stack converter given that the mapfile was already set.
-     * @return: a string with the error or undefined on success.
+     * Convenience method for creating a StackConverter from a directory containing source map files
+     * @param dir - path to directory containing source map files
+     * @returns - promise that resolves to a new StackConverter
      */
-    public async init(): Promise<{ error?: string }> {
+    static async createFromDirectory(dir: string): Promise<StackConverter> {
         try {
-            const stat = await fs.lstat(this.fileName);
-            if (!stat) {
-                return { error: `file "${this.fileName}" does not exist` };
-            }
-            this.fromDirectory = stat.isDirectory();
-            if (this.fromDirectory) {
-                return await this.initFromDirectory();
-            }
-            return await this.initFromFile();
-        } catch (err) {
-            return { error: err.message };
+            await fs.lstat(dir);
+        } catch(error) {
+            throw new Error(`Could not create StackConverter: ${dir} does not exist or is inaccessible!`);
         }
+
+        const files = await fs.readdir(dir);
+        const sourceMapFilePaths = files
+            .filter(file => file.endsWith('.map'))
+            .map(file => path.join(dir, file));
+        return new StackConverter(sourceMapFilePaths);
     }
-
-    private static async sourceMapFromFile(file: string): Promise<{sourceMap?: SourceMapConsumer, error?: string}> {
-        if (!file) {
-            return { error: 'could not initialize StackConverter, fileName not set' };
-        }
-        // if the file doesn't exist, return error string
-        const stat = await fs.lstat(file);
-        if (!stat) {
-            return { error: `file "${file}" does not exist` };
-        }
-
-        const fileData = await fs.readFile(file, {
-            encoding: "utf8",
-            flag: "r",
-        });
-        const parsedSourceMap = JSON.parse(fileData);
-        const sourceMap = await new SourceMapConsumer(parsedSourceMap);
-        return { sourceMap };
-    }
-
-    private async initFromFile(): Promise<{ error?: string }> {
-        const { sourceMap, error } = await StackConverter.sourceMapFromFile(this.fileName);
-        if (error) {
-            return { error };
-        }
-        this.sourceMapConsumer = sourceMap;
-
-        if (!this.sourceMapConsumer) {
-            return { error: `cannot init, error loading source map file ${this.fileName}` };
-        }
-        this.initialized = true;
-        return {};
-    }
-
-    private async mapFilesInDir(): Promise<boolean> {
-        try {
-            const files = await fs.readdir(this.fileName);
-            return files.some(f => f.endsWith('.map'));
-        } catch (err) {
-            return false;
-        }
-    }
-
-    private async initFromDirectory(): Promise<{ error?: string }> {
-        // confirm that there are sourceMap files in directory
-        if (!await this.mapFilesInDir()) {
-            return { error: `there are no map files in directory ${this.fileName}` };
-        }
-        this.initialized = true;
-        return {};
-    }
-
-    static INDENT = '    ';
 
     /**
-     * Converts a given stack frame
-     * @param stackString
+     * Converts the file names and line numbers of a stack trace using the corresponding source maps
+     * @param stackString - a string representation of a stack trace from a Error object
+     * @returns - promise that resolves to an object that contains an error or a stack
      */
-    public async convert(stackString: string): Promise<{error?: string, stack?: string}>
-    {
-        if (!this.initialized) {
-            return { error: 'have not initialized, call init() first' };
-        }
-        const stackFrames = stackTraceParser.parse(stackString);
+    async convert(stackString: string): Promise<{error?: string, stack?: string}> {
         if (!stackString) {
-            // an empty stack is converted to an empty stack.
             return { stack: '' };
         }
+
+        const stackFrames = stackTraceParser.parse(stackString);
         if (stackFrames.length == 0) {
-            return { error: 'no stacks found in input' };
+            return { error: 'No stack frames found in stackString' };
         }
 
-        if (this.fromDirectory) {
-            return await this.convertFromDirectory(stackFrames);
-        }
-
-        const INDENT = '    ';
-        const buff: string[] = [];
-        stackFrames.forEach(({ methodName, lineNumber, column }) => {
-            const funcName = methodName || '';
-            try {
-                if (!lineNumber || (lineNumber < 1)) {
-                    buff.push(`${INDENT}at ${funcName}`);
-                } else {
-                    const origPos = this.sourceMapConsumer.originalPositionFor({ line: lineNumber, column });
-                    if (origPos && origPos.line != null) {
-                        const origName = origPos.name || '<unknown>';
-                        buff.push(`${INDENT}at ${origName} (${origPos.source}:${origPos.line}:${origPos.column})`);
-                    }
-                }
-            } catch (err) {
-                buff.push(`${INDENT}**could not convert frame**, err = ${err}`);
-            }
-        });
-        return { stack: buff.join('\n') };
-    }
-
-    private static frameLine(methodName: string, file: string, line: number, column: number, comment?: string): string {
-        const meth = methodName || '<unknown>';
-        return `${StackConverter.INDENT}at ${meth} (${file}:${line}:${column})` + (comment ? '  ***' + comment : '');
-    }
-
-    private async convertFromDirectory(stackFrames: StackFrame[]): Promise<{ error?: string, stack?: string }> {
         const buff: string[] = [];
         const sourceMaps: { [filename: string]: SourceMapConsumer } = {};
         const sourceMapErrors: { [filename: string]: boolean } = {};
 
         for (const frame of stackFrames) {
             const { file, methodName, lineNumber, column } = frame;
-            const mapFile = path.join(this.fileName, path.basename(file) + '.map');
-            if (mapFile in sourceMapErrors) {
-                // skip loading maps for files that failed
-                buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, `error loading source map (previous error)`));
+            if (file in sourceMapErrors) {
+                const comment = StackConverter.errorLoadingSourceMapComment('previous error');
+                buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
                 continue;
             }
-            const funcName = methodName || '';
+
+            if (!lineNumber && !column) {
+                // handle case where <anonymous> is returned as file with no lineNumber or column
+                buff.push(StackConverter.frameLine(methodName, file, lineNumber, column));
+                continue
+            }
+
+            const mapFile = this.sourceMapFilePaths.find(mapFilePath => mapFilePath.includes(`${path.basename(file)}.map`));
+            if (!mapFile) {
+                set(sourceMapErrors, file, true);
+                const comment = StackConverter.errorLoadingSourceMapComment('source map not found');
+                buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
+                continue;
+            }
+
             try {
                 if (!lineNumber || (lineNumber < 1)) {
+                    const funcName = methodName || '';
                     buff.push(`${StackConverter.INDENT}at ${funcName}`);
-                } else {
-                    let sm: SourceMapConsumer = get(sourceMaps, mapFile);
-                    if (!sm) {
-                        const { sourceMap, error } = await StackConverter.sourceMapFromFile(mapFile);
-                        if (!sourceMap || error) {
-                            // could not load so don't convert frame
-                            set(sourceMapErrors, file, true);
-                            buff.push(StackConverter.frameLine(methodName, file, lineNumber, column));
-                            continue;
-                        }
-                        sourceMaps[mapFile] = sourceMap;
-                        sm = sourceMap;
-                    }
-                    const origPos = sm.originalPositionFor({ line: lineNumber, column });
-                    if (!origPos || !origPos.line) {
-                        buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, 'could not convert'));
-                    } else {
-                        buff.push(StackConverter.frameLine(origPos.name, origPos.source, origPos.line, origPos.column));
-                    }
+                    continue;
                 }
+                
+                let sourceMapConsumer: SourceMapConsumer = get(sourceMaps, mapFile);
+                if (!sourceMapConsumer) {
+                    const { sourceMap, error } = await StackConverter.sourceMapFromFile(mapFile);
+                    if (!sourceMap || error) {
+                        set(sourceMapErrors, file, true);
+                        const comment = StackConverter.errorLoadingSourceMapComment(error);
+                        buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
+                        continue;
+                    }
+                    sourceMaps[mapFile] = sourceMap;
+                    sourceMapConsumer = sourceMap;
+                }
+
+                const originalPosition = sourceMapConsumer.originalPositionFor({ line: lineNumber, column });
+                if (!originalPosition || !originalPosition.line) {
+                    const comment = StackConverter.couldNotConvertStackFrameComment('original position not found')
+                    buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
+                    continue;
+                }
+
+                buff.push(StackConverter.frameLine(originalPosition.name, originalPosition.source, originalPosition.line, originalPosition.column));
             } catch (err) {
-                buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, `could not convert, err = ${err}`));
+                const comment = StackConverter.couldNotConvertStackFrameComment(err.message);
+                buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
             }
         }
         return { stack: buff.join('\n') };
+    }
+
+    private static couldNotConvertStackFrameComment(comment: string): string {
+        return `Could not convert stack frame (${comment})`;
+    }
+
+    private static errorLoadingSourceMapComment(comment: string): string {
+        return `Error loading source map for frame (${comment})`;
+    }
+
+    private static frameLine(methodName: string, file: string, line: number, column: number, comment?: string): string {
+        const method = methodName || '<unknown>';
+        if (!line && !column) {
+            return `${StackConverter.INDENT}at ${method} (${file})` + (comment ? '  ***' + comment : '');
+        }
+
+        return `${StackConverter.INDENT}at ${method} (${file}:${line}:${column})` + (comment ? '  ***' + comment : '');
+    }
+
+    private static async sourceMapFromFile(file: string): Promise<{sourceMap?: SourceMapConsumer, error?: string}> {
+        if (!file) {
+            return { error: 'file name was empty' };
+        }
+
+        try {
+            await fs.lstat(file);
+        } catch (error) {
+            return { error: `file ${file} does not exist or is inaccessible` };
+        }
+
+        const fileData = await fs.readFile(file, { encoding: "utf8", flag: "r" });
+        if (!fileData) {
+            return { error: `file ${file} was empty` };
+        }
+
+        try {
+            const parsedSourceMap = JSON.parse(fileData);
+            const sourceMap = await new SourceMapConsumer(parsedSourceMap);
+            return { sourceMap };
+        } catch(error) {
+            return { error: 'could not parse source map' };
+        }
     }
 }

@@ -1,0 +1,11 @@
+Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
+    at t.<anonymous> (https://app.bugsplat.com/v2/main-es2015.cd6a577558c44d1be6da.js:1:1387216)
+    at Generator.next (<anonymous>)
+    at https://app.bugsplat.com/v2/main-es2015.cd6a577558c44d1be6da.js:1:995452
+    at new P (https://app.bugsplat.com/v2/polyfills-es2015.2846539e99aef31c99d5.js:1:91860)
+    at s (https://app.bugsplat.com/v2/main-es2015.cd6a577558c44d1be6da.js:1:995200)
+    at t.handleError (https://app.bugsplat.com/v2/main-es2015.cd6a577558c44d1be6da.js:1:1386969)
+    at e.<anonymous> (https://app.bugsplat.com/v2/26-es2015.25866671d60dd4058a4f.js:1:3715)
+    at Generator.next (<anonymous>)
+    at https://app.bugsplat.com/v2/main-es2015.cd6a577558c44d1be6da.js:1:995452
+    at new P (https://app.bugsplat.com/v2/polyfills-es2015.2846539e99aef31c99d5.js:1:91860)

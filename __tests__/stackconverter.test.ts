@@ -12,44 +12,73 @@ const readStack = (file: string): string => {
   });
 };
 
-describe("StackConverter tests", () => {
-  describe("convert", () => {
-    test("empty map file results in JSON parse error", async () => {
-      // NOTE: useful syntax, keep for later
-      // await expect(async () => {
-      //   const emptyJsMapPath = path.join(TESTING_DATA_DIR, "empty.js.map");
-      //   const stackConverter = new StackConverter(emptyJsMapPath);
-      //   await stackConverter.init();
-      // }).rejects.toThrow(/Unexpected token . in JSON at position 0/);
+describe("StackConverter", () => {
+  describe("constructor", () => {
+    test("throws if no sourceMapFilePaths were provided", () => {
+      expect(() => new StackConverter([])).toThrow(/Could not create StackConverter: no source map file paths were provided!/);
+    });
+  });
 
-      const emptyJsMapPath = path.join(TESTING_DATA_DIR, "empty.js.map");
-      const stackConverter = new StackConverter(emptyJsMapPath);
-      const { error } = await stackConverter.init();
-
-      expect(error).toBeDefined();
-      expect(error).toMatchInlineSnapshot(
-        `"Unexpected token � in JSON at position 0"`
-      );
+  describe("createFromDirectory", () => {
+    test("throws if no sourceMapFilePaths were provided", async () => {
+      await expect(
+        async () => {
+          const baseFile = "dir-exists-no-map-files";
+          const mapFilePath = path.join(TESTING_DATA_DIR, baseFile);
+          await StackConverter.createFromDirectory(mapFilePath);
+        }
+      ).rejects.toThrow(/Could not create StackConverter: no source map file paths were provided!/);
     });
 
-    test("stack to convert, results in empty results but no error", async () => {
+    test("throws if directory does not exist at provided path", async () => {
+      await expect(
+        async () => {
+          await StackConverter.createFromDirectory("does-not-exist");
+        }
+      ).rejects.toThrow(/Could not create StackConverter: does-not-exist does not exist or is inaccessible/);
+    });
+  });
+  
+  describe("convert", () => {
+    test("empty stack results in empty results but no error", async () => {
       const mapFile = path.join(TESTING_DATA_DIR, "stack-1.js.map");
-      const stackConverter = new StackConverter(mapFile);
-      {
-        const { error } = await stackConverter.init();
-        expect(error).not.toBeDefined();
-      }
-
+      const stackConverter = new StackConverter([mapFile]);
       const { error, stack } = await stackConverter.convert("");
       expect(error).toBeUndefined();
       expect(stack).toMatchInlineSnapshot(`""`);
     });
 
+    test("source map file that does not exist results stack frame with error message", async () => {
+      const missingJsFileName = "does-not-exist.js";
+      const missingJsMapPath = path.join(TESTING_DATA_DIR, `${missingJsFileName}.map`);
+      const stackConverter = new StackConverter([missingJsMapPath]);
+      const { error, stack } = await stackConverter.convert(`    at hello (${missingJsFileName}:1:1337)`);
+      expect(error).toBeFalsy();
+      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file ${missingJsMapPath} does not exist or is inaccessible\\)`));
+    });
+
+    test("empty source map file results stack frame with error message", async () => {
+      const emptyJsFileName = "empty.js";
+      const emptyJsMapPath = path.join(TESTING_DATA_DIR, `${emptyJsFileName}.map`);
+      const stackConverter = new StackConverter([emptyJsMapPath]);
+      const { error, stack } = await stackConverter.convert(`    at hello (${emptyJsFileName}:1:1337)`);
+      expect(error).toBeFalsy();
+      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file ${emptyJsMapPath} was empty\\)`));
+    });
+
+    test("source map file that can't be parsed results stack frame with error message", async () => {
+      const stackFrameFileName = "corrupt.js";
+      const emptyJsMapPath = path.join(TESTING_DATA_DIR, `${stackFrameFileName}.map`);
+      const stackConverter = new StackConverter([emptyJsMapPath]);
+      const { error, stack } = await stackConverter.convert(`    at hello (${stackFrameFileName}:1:1337)`);
+      expect(error).toBeFalsy();
+      expect(stack).toMatch(/Error loading source map for frame \(could not parse source map\)/);
+    });
+
     test("read in stack-1 map file and convert stack-1 sample data", async () => {
       const baseFile = "stack-1";
       const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
-      const stackConverter = new StackConverter(mapFilePath);
-      await stackConverter.init();
+      const stackConverter = new StackConverter([mapFilePath]);
       const stackFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
       const stackText = readStack(stackFilePath);
       const { error, stack } = await stackConverter.convert(stackText);
@@ -63,88 +92,53 @@ describe("StackConverter tests", () => {
             at <unknown> (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
+            at <unknown> (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)"
       `);
     });
 
-    test("read in stack-2 map file and convert to stack-2 sample data", async () => {
-      const baseFile = "stack-2";
-      const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
-      const stackConverter = new StackConverter(mapFilePath);
-      await stackConverter.init();
-      const stackFile = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
+    test("read in stack trace containing frames from multiple files missing source maps converts stack with errors",  async () => {
+      const stackAndSourceMapDir = path.join(TESTING_DATA_DIR, "dir-multiple-source-map-files");
+      const stackConverter = new StackConverter([
+        path.join(stackAndSourceMapDir, "main-es2015.cd6a577558c44d1be6da.js.map"),
+        path.join(stackAndSourceMapDir, "polyfills-es2015.2846539e99aef31c99d5.js.map")
+      ]);
+      const stackFile = path.join(stackAndSourceMapDir, "stack-to-convert.txt");
       const stackText = readStack(stackFile);
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
       expect(stack).toMatchInlineSnapshot(`
         "    at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
-            at Generator.next
+            at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
-            at titleTpl (webpack:///node_modules/@ng-bootstrap/ng-bootstrap/__ivy_ngcc__/fesm2015/ng-bootstrap.js:7581:13)
+            at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)
             at <unknown> (webpack:///node_modules/tslib/tslib.es6.js:70:11)
             at error (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:21:20)
-            at markForCheck (webpack:///node_modules/@ng-bootstrap/ng-bootstrap/__ivy_ngcc__/fesm2015/ng-bootstrap.js:1351:17)
-            at <unknown> (webpack:///node_modules/@ng-bootstrap/ng-bootstrap/__ivy_ngcc__/fesm2015/ng-bootstrap.js:679:54)
-            at selector (webpack:///node_modules/rxjs/_esm2015/internal/operators/catchError.js:27:30)
-            at error (webpack:///node_modules/rxjs/_esm2015/internal/innerSubscribe.js:45:25)"
+            at e.<anonymous> (https://app.bugsplat.com/v2/26-es2015.25866671d60dd4058a4f.js:1:3715)  ***Error loading source map for frame (source map not found)
+            at Generator.next (<anonymous>)
+            at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
+            at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)"
       `);
     });
 
-    test("point at a file that doesn't exist, initialize fails", async () => {
-      const baseFile = "file-doesnt-exist";
-      const mapFilePath = path.join(TESTING_DATA_DIR, baseFile);
-      const stackConverter = new StackConverter(mapFilePath);
-
-      const { error } = await stackConverter.init();
-      expect(error).toBeDefined();
-      expect(error).toMatch(
-        /ENOENT: no such file or directory, lstat '.*__tests__[\\|\/]test-data[\\|\/]file-doesnt-exist/
-      );
-    });
-
-    test("point a directory that doesn't have map files, initialize fails", async () => {
-      const baseFile = "dir-exists-no-map-files";
-      const mapFilePath = path.join(TESTING_DATA_DIR, baseFile);
-      const stackConverter = new StackConverter(mapFilePath);
-
-      const { error } = await stackConverter.init();
-      expect(error).toBeDefined();
-      expect(error).toMatch(
-        /there are no map files in directory __tests__[\\|\/]test-data[\\|\/]dir-exists-no-map-files/
-      );
-    });
-
-    test("point at directory that does have map files, initialize succeeds", async () => {
-      const baseFile = "dir-exists-has-map-files";
-      const mapFilePath = path.join(TESTING_DATA_DIR, baseFile);
-      const stackConverter = new StackConverter(mapFilePath);
-
-      const { error } = await stackConverter.init();
-      expect(error).not.toBeDefined();
-    });
-
-    test("given a list of directories containing maps, convert a stack frame", async () => {
-      const directory = path.join(TESTING_DATA_DIR, "dir-maps-convert-1");
-      const stackFile = path.join(directory, "stack-to-convert.txt");
+    test("read in stack trace containing frames from multiple files and convert without errors", async () => {
+      const stackAndSourceMapDir = path.join(TESTING_DATA_DIR, "dir-multiple-source-map-files");
+      const stackConverter = await StackConverter.createFromDirectory(stackAndSourceMapDir);
+      const stackFile = path.join(stackAndSourceMapDir, "stack-to-convert.txt");
       const stackText = readStack(stackFile);
-
-      const stackConverter = new StackConverter(directory);
-      {
-        const { error } = await stackConverter.init();
-        expect(error).not.toBeDefined();
-      }
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
+      expect(stackText).toEqual(stackText);
       expect(stack).toMatchInlineSnapshot(`
         "    at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
-            at Generator.next
+            at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)
             at <unknown> (webpack:///node_modules/tslib/tslib.es6.js:70:11)
             at error (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:21:20)
             at handleError (webpack:///src/app/layout/app-layout/services/app-layout-facade/app-layout-facade.service.ts:179:31)
-            at Generator.next
+            at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)"
       `);
