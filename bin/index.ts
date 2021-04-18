@@ -46,8 +46,6 @@ function helpAndExit() {
         + '\n\n\n'
         + '\tstack-converter "/path/to/stack.txt" [ "/path/to/source-maps-dir" OR "/path/to/stack.js.map" ]' 
         + '\n\n\n'
-        + 'Provide either the -d or the -f argument but not both'
-        + '\n\n\n'
         + '❤️ support@bugsplat.com';
 
     console.log(help);

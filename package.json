@@ -8,7 +8,7 @@
   "scripts": {
     "test": "jest",
     "lint": "DEBUG=eslint:cli-engine yarn eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "cmd": "ts-node scripts/index.ts",
+    "cmd": "ts-node bin/index.ts",
     "build": "rm -rf ./dist && tsc &&  cp ./{package.json,README.md,LICENSE} ./dist",
     "release": "cd ./dist && npm publish --access public"
   },
