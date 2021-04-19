@@ -56,7 +56,7 @@ export class StackConverter {
 
         const stackFrames = stackTraceParser.parse(stack);
         if (stackFrames.length == 0) {
-            return { error: 'No stack frames found in stackString' };
+            return { error: 'No stack frames found in stack input' };
         }
 
         const buff: string[] = [];
