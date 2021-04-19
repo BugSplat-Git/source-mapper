@@ -6,16 +6,25 @@
     "configurations": [
         {
             "name": "Cmd",
+            "type": "node",
             "request": "launch",
+            "runtimeExecutable": "node",
             "runtimeArgs": [
-                "run-script",
-                "cmd"
+                "--nolazy",
+                "-r",
+                "ts-node/register/transpile-only"
             ],
-            "runtimeExecutable": "npm",
+            "args": [
+                "bin/index.ts",
+                "__tests__/test-data/dir-multiple-source-map-files/stack-to-convert.txt",
+                "__tests__/test-data/dir-multiple-source-map-files"
+            ],
+            "cwd": "${workspaceRoot}",
+            "internalConsoleOptions": "openOnSessionStart",
             "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "pwa-node"
+                "<node_internals>/**",
+                "node_modules/**"
+            ]
         },
         {
             "name": "Test",

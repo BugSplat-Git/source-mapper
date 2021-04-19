@@ -1,5 +1,8 @@
 /node_modules/
 /build/
+/dist/
 
 js/*.map
 js/ts.js
+
+yarn-error.log
