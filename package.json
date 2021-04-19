@@ -41,6 +41,7 @@
     "bugsplat"
   ],
   "dependencies": {
+    "clipboardy": "^2.3.0",
     "fs-extra": "^9.1.0",
     "stacktrace-parser": "^0.1.10",
     "ts-node": "^9.1.1",
