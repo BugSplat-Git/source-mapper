@@ -39,14 +39,15 @@ import { StackConverter } from "../lib/stack-converter";
 
 
 function helpAndExit() {
-    const help = '\n'
-        + '@bugsplat/stack-converter contains a command line utility and set of libraries to help you demangle JavaScript stack frames.'
-        + '\n\n\n'
-        + 'stack-converter command line usage:'
-        + '\n\n\n'
-        + '\tstack-converter "/path/to/stack.txt" [ "/path/to/source-maps-dir" OR "/path/to/stack.js.map" ]' 
-        + '\n\n\n'
-        + '❤️ support@bugsplat.com';
+    const help = `
+        @bugsplat/stack-converter contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
+
+        stack-converter command line usage:
+
+            stack-converter "/path/to/stack.txt" [ "/path/to/source-maps-dir" OR "/path/to/stack.js.map" ]' 
+        
+        ❤️ support@bugsplat.com
+    `;
 
     console.log(help);
     process.exit(1);
