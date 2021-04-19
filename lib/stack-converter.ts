@@ -63,6 +63,11 @@ export class StackConverter {
         const sourceMaps: { [filename: string]: SourceMapConsumer } = {};
         const sourceMapErrors: { [filename: string]: boolean } = {};
 
+        const errorLine = StackConverter.getChromiumErrorLineOrEmpty(stack);
+        if (errorLine) {
+            buff.push(errorLine);
+        }
+
         for (const frame of stackFrames) {
             const { file, methodName, lineNumber, column } = frame;
             if (file in sourceMapErrors) {
@@ -136,6 +141,15 @@ export class StackConverter {
         }
 
         return `${StackConverter.INDENT}at ${method} (${file}:${line}:${column})` + (comment ? '  ***' + comment : '');
+    }
+
+    private static getChromiumErrorLineOrEmpty(stack: string): string {
+        const parts = stack.split('\n');
+        if (parts[0].startsWith('Error:')) {
+            return parts[0];
+        }
+
+        return '';
     }
 
     private static async sourceMapFromFile(file: string): Promise<{sourceMap?: SourceMapConsumer, error?: string}> {
