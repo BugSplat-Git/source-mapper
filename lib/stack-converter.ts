@@ -16,6 +16,7 @@ export class StackConverter {
 
     /**
      * Create a StackConverter by passing an array of paths to source map files
+     *
      * @param sourceMapFilePaths - an array of paths to source map files for converting stacks
      * @throws - throws if no sourceMapFilePaths are provided
      */
@@ -27,7 +28,9 @@ export class StackConverter {
 
     /**
      * Convenience method for creating a StackConverter from a directory containing source map files
+     *
      * @param dir - path to directory containing source map files
+     * @throws - throws if no source map files exist in dir
      * @returns - promise that resolves to a new StackConverter
      */
     static async createFromDirectory(dir: string): Promise<StackConverter> {
@@ -46,6 +49,7 @@ export class StackConverter {
 
     /**
      * Converts the file names and line numbers of a stack trace using the corresponding source maps
+     *
      * @param stack - a string representation of a stack trace from a Error object
      * @returns - promise that resolves to an object that contains an error or a stack
      */
