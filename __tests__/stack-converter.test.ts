@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { StackConverter } from "../src/stackconverter";
+import { StackConverter } from "../lib/stack-converter";
 
 const TESTING_DIR = "__tests__";
 const TESTING_DATA_DIR = path.join(TESTING_DIR, "test-data");
@@ -50,20 +50,22 @@ describe("StackConverter", () => {
 
     test("source map file that does not exist results stack frame with error message", async () => {
       const missingJsFileName = "does-not-exist.js";
-      const missingJsMapPath = path.join(TESTING_DATA_DIR, `${missingJsFileName}.map`);
+      const missingJsMapFileName = `${missingJsFileName}.map`
+      const missingJsMapPath = path.join(TESTING_DATA_DIR, missingJsMapFileName);
       const stackConverter = new StackConverter([missingJsMapPath]);
       const { error, stack } = await stackConverter.convert(`    at hello (${missingJsFileName}:1:1337)`);
       expect(error).toBeFalsy();
-      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file ${missingJsMapPath} does not exist or is inaccessible\\)`));
+      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file .*${missingJsMapFileName} does not exist or is inaccessible\\)`));
     });
 
     test("empty source map file results stack frame with error message", async () => {
       const emptyJsFileName = "empty.js";
-      const emptyJsMapPath = path.join(TESTING_DATA_DIR, `${emptyJsFileName}.map`);
+      const emptyJsMapFileName = `${emptyJsFileName}.map`
+      const emptyJsMapPath = path.join(TESTING_DATA_DIR, emptyJsMapFileName);
       const stackConverter = new StackConverter([emptyJsMapPath]);
       const { error, stack } = await stackConverter.convert(`    at hello (${emptyJsFileName}:1:1337)`);
       expect(error).toBeFalsy();
-      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file ${emptyJsMapPath} was empty\\)`));
+      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file .*${emptyJsMapFileName} was empty\\)`));
     });
 
     test("source map file that can't be parsed results stack frame with error message", async () => {
@@ -84,7 +86,8 @@ describe("StackConverter", () => {
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
       expect(stack).toMatchInlineSnapshot(`
-        "    at <unknown> (dummy.ts:2:31)
+        "Error: Crush your bugs!
+            at <unknown> (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
@@ -109,7 +112,8 @@ describe("StackConverter", () => {
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
       expect(stack).toMatchInlineSnapshot(`
-        "    at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
+        "Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
+            at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)
@@ -131,7 +135,8 @@ describe("StackConverter", () => {
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
       expect(stack).toMatchInlineSnapshot(`
-        "    at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
+        "Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
+            at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)
