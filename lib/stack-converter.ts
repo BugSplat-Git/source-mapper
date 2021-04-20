@@ -1,6 +1,6 @@
-import * as fs from "fs/promises";
+import * as fs from 'fs/promises';
 import { get, set } from 'lodash';
-import * as path from "path";
+import * as path from 'path';
 import { SourceMapConsumer } from 'source-map';
 import * as stackTraceParser from 'stacktrace-parser';
 
@@ -16,18 +16,21 @@ export class StackConverter {
 
     /**
      * Create a StackConverter by passing an array of paths to source map files
+     *
      * @param sourceMapFilePaths - an array of paths to source map files for converting stacks
      * @throws - throws if no sourceMapFilePaths are provided
      */
     constructor(private sourceMapFilePaths: Array<string>) {
         if (!sourceMapFilePaths?.length) {
-            throw new Error(`Could not create StackConverter: no source map file paths were provided!`);
+            throw new Error('Could not create StackConverter: no source map file paths were provided!');
         }
     }
 
     /**
      * Convenience method for creating a StackConverter from a directory containing source map files
+     *
      * @param dir - path to directory containing source map files
+     * @throws - throws if no source map files exist in dir
      * @returns - promise that resolves to a new StackConverter
      */
     static async createFromDirectory(dir: string): Promise<StackConverter> {
@@ -46,6 +49,7 @@ export class StackConverter {
 
     /**
      * Converts the file names and line numbers of a stack trace using the corresponding source maps
+     *
      * @param stack - a string representation of a stack trace from a Error object
      * @returns - promise that resolves to an object that contains an error or a stack
      */
@@ -163,7 +167,7 @@ export class StackConverter {
             return { error: `file ${file} does not exist or is inaccessible` };
         }
 
-        const fileData = await fs.readFile(file, { encoding: "utf8", flag: "r" });
+        const fileData = await fs.readFile(file, { encoding: 'utf8', flag: 'r' });
         if (!fileData) {
             return { error: `file ${file} was empty` };
         }

@@ -1,7 +1,25 @@
-import * as clipboardy from "clipboardy";
-import { Stats } from "fs";
-import * as fs from "fs/promises";
-import { StackConverter } from "../lib/stack-converter";
+import * as clipboardy from 'clipboardy';
+import { Stats } from 'fs';
+import * as fs from 'fs/promises';
+import { StackConverter } from '../lib/stack-converter';
+
+const helpAndExit = () => {
+    const help = `
+        @bugsplat/stack-converter contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
+
+        stack-converter command line usage:
+
+            stack-converter [ [ "/source-map-directory" OR "/source.map.js" ] [ "/stack-trace.txt" ] ]
+        
+        * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to current directory
+        * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to value in clipboard
+        
+        ❤️ support@bugsplat.com
+    `;
+
+    console.log(help);
+    process.exit(1);
+};
 
 (async () => {
     try {
@@ -16,12 +34,12 @@ import { StackConverter } from "../lib/stack-converter";
 
         let sourceMapPath = process.argv[2];
         if (!sourceMapPath) {
-            sourceMapPath = ".";
+            sourceMapPath = '.';
         }
 
         let sourceMapStat: Stats;
         try {
-            sourceMapStat = await fs.lstat(sourceMapPath)
+            sourceMapStat = await fs.lstat(sourceMapPath);
         } catch {
             throw new Error(`Source map path ${sourceMapPath} does not exist`);
         }
@@ -32,7 +50,7 @@ import { StackConverter } from "../lib/stack-converter";
             stackFileContents = await clipboardy.read();
         } else {
             try {
-                await fs.lstat(stackFilePath)
+                await fs.lstat(stackFilePath);
             } catch {
                 throw new Error(`Stack file path ${stackFilePath} does not exist`);
             }
@@ -58,22 +76,3 @@ import { StackConverter } from "../lib/stack-converter";
         process.exit(1);
     }
 })();
-
-
-function helpAndExit() {
-    const help = `
-        @bugsplat/stack-converter contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
-
-        stack-converter command line usage:
-
-            stack-converter [ [ "/source-map-directory" OR "/source.map.js" ] [ "/stack-trace.txt" ] ]
-        
-        * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to current directory
-        * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to value in clipboard
-        
-        ❤️ support@bugsplat.com
-    `;
-
-    console.log(help);
-    process.exit(1);
-}
