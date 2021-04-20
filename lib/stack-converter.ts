@@ -1,6 +1,6 @@
-import * as fs from "fs/promises";
+import * as fs from 'fs/promises';
 import { get, set } from 'lodash';
-import * as path from "path";
+import * as path from 'path';
 import { SourceMapConsumer } from 'source-map';
 import * as stackTraceParser from 'stacktrace-parser';
 
@@ -21,7 +21,7 @@ export class StackConverter {
      */
     constructor(private sourceMapFilePaths: Array<string>) {
         if (!sourceMapFilePaths?.length) {
-            throw new Error(`Could not create StackConverter: no source map file paths were provided!`);
+            throw new Error('Could not create StackConverter: no source map file paths were provided!');
         }
     }
 
@@ -163,7 +163,7 @@ export class StackConverter {
             return { error: `file ${file} does not exist or is inaccessible` };
         }
 
-        const fileData = await fs.readFile(file, { encoding: "utf8", flag: "r" });
+        const fileData = await fs.readFile(file, { encoding: 'utf8', flag: 'r' });
         if (!fileData) {
             return { error: `file ${file} was empty` };
         }

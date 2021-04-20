@@ -1,7 +1,7 @@
-import * as clipboardy from "clipboardy";
-import { Stats } from "fs";
-import * as fs from "fs/promises";
-import { StackConverter } from "../lib/stack-converter";
+import * as clipboardy from 'clipboardy';
+import { Stats } from 'fs';
+import * as fs from 'fs/promises';
+import { StackConverter } from '../lib/stack-converter';
 
 (async () => {
     try {
@@ -16,12 +16,12 @@ import { StackConverter } from "../lib/stack-converter";
 
         let sourceMapPath = process.argv[2];
         if (!sourceMapPath) {
-            sourceMapPath = ".";
+            sourceMapPath = '.';
         }
 
         let sourceMapStat: Stats;
         try {
-            sourceMapStat = await fs.lstat(sourceMapPath)
+            sourceMapStat = await fs.lstat(sourceMapPath);
         } catch {
             throw new Error(`Source map path ${sourceMapPath} does not exist`);
         }
@@ -32,7 +32,7 @@ import { StackConverter } from "../lib/stack-converter";
             stackFileContents = await clipboardy.read();
         } else {
             try {
-                await fs.lstat(stackFilePath)
+                await fs.lstat(stackFilePath);
             } catch {
                 throw new Error(`Stack file path ${stackFilePath} does not exist`);
             }

@@ -10,6 +10,7 @@ module.exports = {
     ],
     rules: {
         'semi': ['error', 'always'],
-        'object-curly-spacing': ['error', 'always']
+        'object-curly-spacing': ['error', 'always'],
+        'quotes': ['error', 'single']
     }
   };
