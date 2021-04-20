@@ -50,20 +50,22 @@ describe("StackConverter", () => {
 
     test("source map file that does not exist results stack frame with error message", async () => {
       const missingJsFileName = "does-not-exist.js";
-      const missingJsMapPath = path.join(TESTING_DATA_DIR, `${missingJsFileName}.map`);
+      const missingJsMapFileName = `${missingJsFileName}.map`
+      const missingJsMapPath = path.join(TESTING_DATA_DIR, missingJsMapFileName);
       const stackConverter = new StackConverter([missingJsMapPath]);
       const { error, stack } = await stackConverter.convert(`    at hello (${missingJsFileName}:1:1337)`);
       expect(error).toBeFalsy();
-      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file ${missingJsMapPath} does not exist or is inaccessible\\)`));
+      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file .*${missingJsMapFileName} does not exist or is inaccessible\\)`));
     });
 
     test("empty source map file results stack frame with error message", async () => {
       const emptyJsFileName = "empty.js";
-      const emptyJsMapPath = path.join(TESTING_DATA_DIR, `${emptyJsFileName}.map`);
+      const emptyJsMapFileName = `${emptyJsFileName}.map`
+      const emptyJsMapPath = path.join(TESTING_DATA_DIR, emptyJsMapFileName);
       const stackConverter = new StackConverter([emptyJsMapPath]);
       const { error, stack } = await stackConverter.convert(`    at hello (${emptyJsFileName}:1:1337)`);
       expect(error).toBeFalsy();
-      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file ${emptyJsMapPath} was empty\\)`));
+      expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file .*${emptyJsMapFileName} was empty\\)`));
     });
 
     test("source map file that can't be parsed results stack frame with error message", async () => {
