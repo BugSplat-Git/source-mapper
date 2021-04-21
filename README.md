@@ -49,7 +49,7 @@ import { StackConverter } from '@bugsplat/stack-converter';
 const converter = new StackConverter(sourceMapFilePaths);
 ```
 ```ts
-const converter = await StackConverter.createFromDirectory(directoryPath);
+const converter = await StackConverter.createFromDirectory(directory);
 ```
 4. Await the call to convert passing it the stack property from a JavaScript Error object
 ```ts
