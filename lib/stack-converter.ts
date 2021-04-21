@@ -29,21 +29,21 @@ export class StackConverter {
     /**
      * Convenience method for creating a StackConverter from a directory containing source map files
      *
-     * @param dir - path to directory containing source map files
+     * @param directory - path to directory containing source map files
      * @throws - throws if no source map files exist in dir
      * @returns - promise that resolves to a new StackConverter
      */
-    static async createFromDirectory(dir: string): Promise<StackConverter> {
+    static async createFromDirectory(directory: string): Promise<StackConverter> {
         try {
-            await fs.lstat(dir);
+            await fs.lstat(directory);
         } catch(error) {
-            throw new Error(`Could not create StackConverter: ${dir} does not exist or is inaccessible!`);
+            throw new Error(`Could not create StackConverter: ${directory} does not exist or is inaccessible!`);
         }
 
-        const files = await fs.readdir(dir);
+        const files = await fs.readdir(directory);
         const sourceMapFilePaths = files
             .filter(file => file.endsWith('.map'))
-            .map(file => path.join(dir, file));
+            .map(file => path.join(directory, file));
         return new StackConverter(sourceMapFilePaths);
     }
 
@@ -120,8 +120,8 @@ export class StackConverter {
                     buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
                     continue;
                 }
-
-                buff.push(StackConverter.frameLine(originalPosition.name, originalPosition.source, originalPosition.line, originalPosition.column));
+                const name = originalPosition.name || methodName;
+                buff.push(StackConverter.frameLine(name, originalPosition.source, originalPosition.line, originalPosition.column));
             } catch (err) {
                 const comment = StackConverter.couldNotConvertStackFrameComment(err.message);
                 buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));

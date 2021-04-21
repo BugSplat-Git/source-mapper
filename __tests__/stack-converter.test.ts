@@ -87,16 +87,16 @@ describe('StackConverter', () => {
       expect(error).toBeUndefined();
       expect(stack).toMatchInlineSnapshot(`
         "Error: Crush your bugs!
+            at e.onButtonClick (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)
-            at <unknown> (dummy.ts:2:31)"
+            at Fo (dummy.ts:2:31)
+            at i (dummy.ts:2:31)
+            at HTMLButtonElement.<anonymous> (dummy.ts:2:31)
+            at e.invokeTask (dummy.ts:2:31)
+            at Object.onInvokeTask (dummy.ts:2:31)
+            at e.invokeTask (dummy.ts:2:31)
+            at t.runTask (dummy.ts:2:31)
+            at t.invokeTask [as invoke] (dummy.ts:2:31)"
       `);
     });
 
@@ -113,11 +113,11 @@ describe('StackConverter', () => {
       expect(stackText).toEqual(stackText);
       expect(stack).toMatchInlineSnapshot(`
         "Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
-            at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
+            at t.<anonymous> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)
-            at <unknown> (webpack:///node_modules/tslib/tslib.es6.js:70:11)
+            at s (webpack:///node_modules/tslib/tslib.es6.js:70:11)
             at error (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:21:20)
             at e.<anonymous> (https://app.bugsplat.com/v2/26-es2015.25866671d60dd4058a4f.js:1:3715)  ***Error loading source map for frame (source map not found)
             at Generator.next (<anonymous>)
@@ -136,11 +136,11 @@ describe('StackConverter', () => {
       expect(stackText).toEqual(stackText);
       expect(stack).toMatchInlineSnapshot(`
         "Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
-            at <unknown> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
+            at t.<anonymous> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)
-            at <unknown> (webpack:///node_modules/tslib/tslib.es6.js:70:11)
+            at s (webpack:///node_modules/tslib/tslib.es6.js:70:11)
             at error (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:21:20)
             at handleError (webpack:///src/app/layout/app-layout/services/app-layout-facade/app-layout-facade.service.ts:179:31)
             at Generator.next (<anonymous>)
