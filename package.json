@@ -1,16 +1,19 @@
 {
   "name": "@bugsplat/stack-converter",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "./dist/index.js",
   "bin": {
-    "stack-converter": "bin/index.js"
+    "stack-converter": "./dist/bin/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest",
-    "lint": "DEBUG=eslint:cli-engine yarn eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint": "yarn eslint . --ext .js,.ts --fix",
     "cmd": "ts-node bin/index.ts",
-    "build": "rm -rf ./dist && tsc &&  cp ./{package.json,README.md,LICENSE} ./dist",
-    "release": "cd ./dist && npm publish --access public"
+    "build": "rm -rf ./dist && tsc",
+    "release": "npm run build && npm publish --access public"
   },
   "repository": {
     "type": "git",
