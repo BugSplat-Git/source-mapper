@@ -49,6 +49,7 @@
   "dependencies": {
     "clipboardy": "^2.3.0",
     "fs-extra": "^9.1.0",
+    "lodash": "^4.17.21",
     "stacktrace-parser": "^0.1.10"
   },
   "devDependencies": {
