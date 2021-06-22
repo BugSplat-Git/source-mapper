@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { StackConverter } from '../lib/stack-converter';
 
-const TESTING_DIR = '__tests__';
+const TESTING_DIR = 'spec';
 const TESTING_DATA_DIR = path.join(TESTING_DIR, 'test-data');
 
 const readStack = (file: string): string => {
@@ -14,41 +14,34 @@ const readStack = (file: string): string => {
 
 describe('StackConverter', () => {
   describe('constructor', () => {
-    test('throws if no sourceMapFilePaths were provided', () => {
-      expect(() => new StackConverter([])).toThrow(/Could not create StackConverter: no source map file paths were provided!/);
+    it('throws if no sourceMapFilePaths were provided', () => {
+      expect(() => new StackConverter([])).toThrowError(/Could not create StackConverter: no source map file paths were provided!/);
     });
   });
 
   describe('createFromDirectory', () => {
-    test('throws if no sourceMapFilePaths were provided', async () => {
-      await expect(
-        async () => {
-          const baseFile = 'dir-exists-no-map-files';
-          const mapFilePath = path.join(TESTING_DATA_DIR, baseFile);
-          await StackConverter.createFromDirectory(mapFilePath);
-        }
-      ).rejects.toThrow(/Could not create StackConverter: no source map file paths were provided!/);
+    it('throws if no sourceMapFilePaths were provided', async () => {
+      const baseFile = 'dir-exists-no-map-files';
+      const mapFilePath = path.join(TESTING_DATA_DIR, baseFile);
+      const promise = StackConverter.createFromDirectory(mapFilePath);
+      await expectAsync(promise).toBeRejectedWithError(/Could not create StackConverter: no source map file paths were provided!/);
     });
 
-    test('throws if directory does not exist at provided path', async () => {
-      await expect(
-        async () => {
-          await StackConverter.createFromDirectory('does-not-exist');
-        }
-      ).rejects.toThrow(/Could not create StackConverter: does-not-exist does not exist or is inaccessible/);
+    it('throws if directory does not exist at provided path', async () => {
+      await expectAsync(StackConverter.createFromDirectory('does-not-exist')).toBeRejectedWithError(/Could not create StackConverter: does-not-exist does not exist or is inaccessible/);
     });
   });
   
   describe('convert', () => {
-    test('empty stack results in empty results but no error', async () => {
+    it('empty stack results in empty results but no error', async () => {
       const mapFile = path.join(TESTING_DATA_DIR, 'stack-1.js.map');
       const stackConverter = new StackConverter([mapFile]);
       const { error, stack } = await stackConverter.convert('');
       expect(error).toBeUndefined();
-      expect(stack).toMatchInlineSnapshot('""');
+      expect(stack).toEqual('');
     });
 
-    test('source map file that does not exist results stack frame with error message', async () => {
+    it('source map file that does not exist results stack frame with error message', async () => {
       const missingJsFileName = 'does-not-exist.js';
       const missingJsMapFileName = `${missingJsFileName}.map`;
       const missingJsMapPath = path.join(TESTING_DATA_DIR, missingJsMapFileName);
@@ -58,7 +51,7 @@ describe('StackConverter', () => {
       expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file .*${missingJsMapFileName} does not exist or is inaccessible\\)`));
     });
 
-    test('empty source map file results stack frame with error message', async () => {
+    it('empty source map file results stack frame with error message', async () => {
       const emptyJsFileName = 'empty.js';
       const emptyJsMapFileName = `${emptyJsFileName}.map`;
       const emptyJsMapPath = path.join(TESTING_DATA_DIR, emptyJsMapFileName);
@@ -68,7 +61,7 @@ describe('StackConverter', () => {
       expect(stack).toMatch(new RegExp(`Error loading source map for frame \\(file .*${emptyJsMapFileName} was empty\\)`));
     });
 
-    test('source map file that can\'t be parsed results stack frame with error message', async () => {
+    it('source map file that can\'t be parsed results stack frame with error message', async () => {
       const stackFrameFileName = 'corrupt.js';
       const emptyJsMapPath = path.join(TESTING_DATA_DIR, `${stackFrameFileName}.map`);
       const stackConverter = new StackConverter([emptyJsMapPath]);
@@ -77,7 +70,7 @@ describe('StackConverter', () => {
       expect(stack).toMatch(/Error loading source map for frame \(could not parse source map\)/);
     });
 
-    test('read in stack-1 map file and convert stack-1 sample data', async () => {
+    it('read in stack-1 map file and convert stack-1 sample data', async () => {
       const baseFile = 'stack-1';
       const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
       const stackConverter = new StackConverter([mapFilePath]);
@@ -85,8 +78,9 @@ describe('StackConverter', () => {
       const stackText = readStack(stackFilePath);
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
-      expect(stack).toMatchInlineSnapshot(`
-        "Error: Crush your bugs!
+      expect(normalize(stack)).toEqual(
+        normalize(
+          `Error: Crush your bugs!
             at e.onButtonClick (dummy.ts:2:31)
             at <unknown> (dummy.ts:2:31)
             at Fo (dummy.ts:2:31)
@@ -96,11 +90,12 @@ describe('StackConverter', () => {
             at Object.onInvokeTask (dummy.ts:2:31)
             at e.invokeTask (dummy.ts:2:31)
             at t.runTask (dummy.ts:2:31)
-            at t.invokeTask [as invoke] (dummy.ts:2:31)"
-      `);
+            at t.invokeTask [as invoke] (dummy.ts:2:31)`
+        )
+      );
     });
 
-    test('read in stack trace containing frames from multiple files missing source maps converts stack with errors',  async () => {
+    it('read in stack trace containing frames from multiple files missing source maps converts stack with errors',  async () => {
       const stackAndSourceMapDir = path.join(TESTING_DATA_DIR, 'dir-multiple-source-map-files');
       const stackConverter = new StackConverter([
         path.join(stackAndSourceMapDir, 'main-es2015.cd6a577558c44d1be6da.js.map'),
@@ -111,8 +106,9 @@ describe('StackConverter', () => {
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
-      expect(stack).toMatchInlineSnapshot(`
-        "Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
+      expect(normalize(stack)).toEqual(
+        normalize(
+          `Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
             at t.<anonymous> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
@@ -122,11 +118,12 @@ describe('StackConverter', () => {
             at e.<anonymous> (https://app.bugsplat.com/v2/26-es2015.25866671d60dd4058a4f.js:1:3715)  ***Error loading source map for frame (source map not found)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
-            at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)"
-      `);
+            at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)`
+        )
+      );
     });
 
-    test('read in stack trace containing frames from multiple files and convert without errors', async () => {
+    it('read in stack trace containing frames from multiple files and convert without errors', async () => {
       const stackAndSourceMapDir = path.join(TESTING_DATA_DIR, 'dir-multiple-source-map-files');
       const stackConverter = await StackConverter.createFromDirectory(stackAndSourceMapDir);
       const stackFile = path.join(stackAndSourceMapDir, 'stack-to-convert.txt');
@@ -134,8 +131,9 @@ describe('StackConverter', () => {
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
-      expect(stack).toMatchInlineSnapshot(`
-        "Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
+      expect(normalize(stack)).toEqual(
+        normalize(
+          `Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
             at t.<anonymous> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
@@ -145,8 +143,13 @@ describe('StackConverter', () => {
             at handleError (webpack:///src/app/layout/app-layout/services/app-layout-facade/app-layout-facade.service.ts:179:31)
             at Generator.next (<anonymous>)
             at next (webpack:///node_modules/tslib/tslib.es6.js:74:70)
-            at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)"
-      `);
+            at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)`
+          )
+        );
     });
   });
 });
+
+function normalize(value: string): string {
+  return value.replaceAll(/\s/g, '');
+}

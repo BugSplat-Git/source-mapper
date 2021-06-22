@@ -16,8 +16,8 @@
             ],
             "args": [
                 "bin/index.ts",
-                "__tests__/test-data/dir-multiple-source-map-files",
-                "__tests__/test-data/dir-multiple-source-map-files/stack-to-convert.txt"
+                "spec/test-data/dir-multiple-source-map-files",
+                "spec/test-data/dir-multiple-source-map-files/stack-to-convert.txt"
             ],
             "cwd": "${workspaceRoot}",
             "internalConsoleOptions": "openOnSessionStart",
