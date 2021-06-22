@@ -5,9 +5,10 @@
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "strict": true,
+    "strict": false,
     "strictNullChecks": false,
     "noImplicitAny": false,
+    "noImplicitUseStrict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
