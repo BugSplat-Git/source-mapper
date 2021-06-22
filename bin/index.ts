@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 import * as clipboardy from 'clipboardy';
 import { Stats } from 'fs';
 import * as fs from 'fs/promises';

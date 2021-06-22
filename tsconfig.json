@@ -5,13 +5,15 @@
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "strict": false,
+    "strict": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
-    "noImplicitUseStrict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
   },
-  "exclude" : ["spec"]
+  "files": [
+    "./lib/index.ts",
+    "./bin/index.ts"
+  ]
 }
