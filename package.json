@@ -10,9 +10,11 @@
   ],
   "scripts": {
     "test": "jest",
-    "lint": "yarn eslint . --ext .js,.ts --fix",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "npm run lint -- --fix",
     "cmd": "ts-node bin/index.ts",
-    "build": "rm -rf ./dist && tsc",
+    "prebuild": "rimraf dist",
+    "build": "tsc",
     "release": "npm run build && npm publish --access public"
   },
   "repository": {
@@ -65,6 +67,7 @@
     "eslint-plugin-jsdoc": "^32.3.0",
     "jest": "^26.6.3",
     "jest-teamcity-reporter": "^0.9.0",
+    "rimraf": "^3.0.2",
     "ts-jest": "^26.5.4"
   },
   "jest": {
