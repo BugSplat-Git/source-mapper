@@ -1,0 +1,2 @@
+TypeError: Bug.Splat is not a function
+    at new AppComponent (http://127.0.0.1:8080/stack-2.js:86:20)

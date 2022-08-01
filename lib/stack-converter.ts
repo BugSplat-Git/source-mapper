@@ -149,7 +149,7 @@ export class StackConverter {
 
     private static getChromiumErrorLineOrEmpty(stack: string): string {
         const parts = stack.split('\n');
-        if (parts[0].startsWith('Error:')) {
+        if (parts[0].match('Error:')) {
             return parts[0];
         }
 

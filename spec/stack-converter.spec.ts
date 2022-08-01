@@ -95,6 +95,22 @@ describe('StackConverter', () => {
       );
     });
 
+    it('should include exception message in stack', async () => {
+      const baseFile = 'stack-2';
+      const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
+      const stackConverter = new StackConverter([mapFilePath]);
+      const stackFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
+      const stackText = readStack(stackFilePath);
+      const { error, stack } = await stackConverter.convert(stackText);
+      expect(error).toBeUndefined();
+      expect(normalize(stack)).toEqual(
+        normalize(
+          `TypeError: Bug.Splat is not a function
+            at TypeError (webpack:///projects/my-angular-crasher/src/app/app.component.ts:33:4)`
+        )
+      );
+    });
+
     it('read in stack trace containing frames from multiple files missing source maps converts stack with errors',  async () => {
       const stackAndSourceMapDir = path.join(TESTING_DATA_DIR, 'dir-multiple-source-map-files');
       const stackConverter = new StackConverter([
