@@ -1,6 +1,17 @@
-[![BugSplat](https://s3.amazonaws.com/bugsplat-public/npm/header.png)](https://www.bugsplat.com)
+[![bugsplat-github-banner-basic-outline](https://user-images.githubusercontent.com/20464226/149019306-3186103c-5315-4dad-a499-4fd1df408475.png)](https://bugsplat.com)
+<br/>
+# <div align="center">BugSplat</div> 
+### **<div align="center">Crash and error reporting built for busy developers.</div>**
+<div align="center">
+    <a href="https://twitter.com/BugSplatCo">
+        <img alt="Follow @bugsplatco on Twitter" src="https://img.shields.io/twitter/follow/bugsplatco?label=Follow%20BugSplat&style=social">
+    </a>
+    <a href="https://discord.gg/K4KjjRV5ve">
+        <img alt="Join BugSplat on Discord" src="https://img.shields.io/discord/664965194799251487?label=Join%20Discord&logo=Discord&style=social">
+    </a>
+</div>
 
-# stack-converter
+# 🥞 stack-converter
 `stack-converter` is a utility for translating function names, file names and line numbers in uglified JavaScript Error stack frames to the corresponding values in the original source. `stack-converter` is distributed as both a package and a library and is used by the [BugSplat](https://www.bugsplat.com) backend to deliver crash reporting as a service for JavaScript and TypeScript applications.
 
 The following is an example JavaScript Error stack converted to its TypeScript equivalent using `stack-converter`:
@@ -19,7 +30,7 @@ Error: BugSplat rocks!
     at Object.<anonymous> (../../bin/cmd.ts:12:2)
 ```
 
-## Command Line
+## 🖥 Command Line
 1. Install this package globally `npm i -g @bugsplat/stack-converter`
 2. Run `stack-converter -h` to see the latest usage information:
 ```bash
@@ -38,7 +49,7 @@ bobby@BugSplat % ~ % stack-converter -h
 ```
 3. Run `stack-converter` and optionally specify a path to a directory containing .map files, path to a single .map file, and a path to a .txt file containing a stringified JavaScript Error. If no options are provided `stack-converter` will default to looking in the current directory for source maps and attempt to read the stringified JavaScript error stack from the system clipboard.
 
-## API
+## 🧩 API
 1. Install this package locally `npm i @bugsplat/stack-converter`
 2. Import `StackConverter` from `@bugsplat/stack-converter`
 ```ts
