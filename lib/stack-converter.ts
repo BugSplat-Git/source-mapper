@@ -86,7 +86,12 @@ export class StackConverter {
                 continue;
             }
 
-            const mapFile = this.sourceMapFilePaths.find(mapFilePath => mapFilePath.includes(`${path.basename(file)}.map`));
+            const mapFile = this.sourceMapFilePaths.find(mapFilePath => {
+                const posix = mapFilePath.includes(`${path.posix.basename(file)}.map`);
+                const win32 = mapFilePath.includes(`${path.win32.basename(file)}.map`);
+                return posix || win32;
+            });
+
             if (!mapFile) {
                 set(sourceMapErrors, file, true);
                 const comment = StackConverter.errorLoadingSourceMapComment('source map not found');

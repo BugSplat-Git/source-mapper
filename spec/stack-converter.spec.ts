@@ -95,6 +95,27 @@ describe('StackConverter', () => {
       );
     });
 
+    it('should convert stack using file specified by win32 path', async () => {
+      const baseFile = 'crasher';
+      const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
+      const stackConverter = new StackConverter([mapFilePath]);
+      const stackFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.txt`);
+      const stackText = readStack(stackFilePath);
+      const { error, stack } = await stackConverter.convert(stackText);
+      expect(error).toBeUndefined();
+      expect(normalize(stack)).toContain(
+        normalize(
+          `Error: BugSplat!
+            at crash (../../src/crasher.ts:27:10)
+            at sampleStackFrame2 (../../src/crasher.ts:23:4)
+            at sampleStackFrame1 (../../src/crasher.ts:19:4)
+            at sampleStackFrame0 (../../src/crasher.ts:15:4)
+            at generateStackFramesAndCrash (../../src/crasher.ts:11:4)
+            at uncaughtException (../../src/crasher.ts:3:4)`
+        )
+      );
+    });
+
     it('should include exception message in stack', async () => {
       const baseFile = 'stack-2';
       const mapFilePath = path.join(TESTING_DATA_DIR, `${baseFile}.js.map`);
