@@ -1,6 +1,6 @@
 {
   "name": "@bugsplat/stack-converter",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "main": "./dist/lib/index.js",
   "bin": {
     "stack-converter": "./dist/bin/index.js"
