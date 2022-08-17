@@ -1,0 +1,11 @@
+Error: BugSplat!
+    at crash (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\crasher.js:65:11)
+    at sampleStackFrame2 (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\crasher.js:62:5)
+    at sampleStackFrame1 (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\crasher.js:59:5)
+    at sampleStackFrame0 (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\crasher.js:56:5)
+    at generateStackFramesAndCrash (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\crasher.js:53:5)
+    at uncaughtException (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\crasher.js:41:5)
+    at IpcMainImpl.<anonymous> (C:\Users\anker\Desktop\my-electron-crasher-master\dist\src\main.js:122:37)
+    at IpcMainImpl.emit (node:events:527:28)
+    at EventEmitter.<anonymous> (node:electron/js2c/browser_init:161:11014)
+    at EventEmitter.emit (node:events:527:28)
