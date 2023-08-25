@@ -22,7 +22,6 @@ module.exports = {
         'jsdoc/check-values': 1,
         'jsdoc/empty-tags': 1,
         'jsdoc/implements-on-classes': 1,
-        'jsdoc/newline-after-description': 1,
         'jsdoc/no-undefined-types': 1,
         'jsdoc/require-jsdoc': 1,
         'jsdoc/require-param': 1,

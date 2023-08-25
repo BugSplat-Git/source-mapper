@@ -78,7 +78,7 @@ describe('StackConverter', () => {
       const stackText = readStack(stackFilePath);
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
-      expect(normalize(stack)).toEqual(
+      expect(normalize(stack!)).toEqual(
         normalize(
           `Error: Crush your bugs!
             at e.onButtonClick (dummy.ts:2:31)
@@ -103,7 +103,7 @@ describe('StackConverter', () => {
       const stackText = readStack(stackFilePath);
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
-      expect(normalize(stack)).toContain(
+      expect(normalize(stack!)).toContain(
         normalize(
           `Error: BugSplat!
             at crash (../../src/crasher.ts:27:10)
@@ -124,7 +124,7 @@ describe('StackConverter', () => {
       const stackText = readStack(stackFilePath);
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
-      expect(normalize(stack)).toEqual(
+      expect(normalize(stack!)).toEqual(
         normalize(
           `TypeError: Bug.Splat is not a function
             at TypeError (webpack:///projects/my-angular-crasher/src/app/app.component.ts:33:4)`
@@ -143,7 +143,7 @@ describe('StackConverter', () => {
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
-      expect(normalize(stack)).toEqual(
+      expect(normalize(stack!)).toEqual(
         normalize(
           `Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
             at t.<anonymous> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
@@ -168,7 +168,7 @@ describe('StackConverter', () => {
       const { error, stack } = await stackConverter.convert(stackText);
       expect(error).toBeUndefined();
       expect(stackText).toEqual(stackText);
-      expect(normalize(stack)).toEqual(
+      expect(normalize(stack!)).toEqual(
         normalize(
           `Error: Http failure response for https://app.bugsplat.com/api/subscription.php?database=AutoDb_04102021_95345: 502 OK
             at t.<anonymous> (webpack:///src/app/common/services/bugsplat-custom-error-handler/bugsplat-custom-error-handler.ts:32:16)
