@@ -10,7 +10,7 @@ const helpAndExit = () => {
 
         stack-converter command line usage:
 
-            stack-converter [ [ "/source-map-directory" OR "/source.map.js" ] [ "/stack-trace.txt" ] ]
+            stack-converter [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
         
         * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to current directory
         * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to value in clipboard
