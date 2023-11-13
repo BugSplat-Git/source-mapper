@@ -1,6 +1,6 @@
 {
   "name": "@bugsplat/source-mapper",
-  "version": "1.2.5",
+  "version": "2.0.0",
   "main": "./dist/lib/index.js",
   "bin": {
     "source-mapper": "./dist/bin/index.js"
