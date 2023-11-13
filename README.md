@@ -31,8 +31,10 @@ Error: BugSplat rocks!
 ```
 
 ## 🖥 Command Line
+
 1. Install this package globally `npm i -g @bugsplat/stack-converter`
 2. Run `stack-converter -h` to see the latest usage information:
+
 ```bash
 bobby@BugSplat % ~ % stack-converter -h
 
@@ -40,28 +42,35 @@ bobby@BugSplat % ~ % stack-converter -h
 
     stack-converter command line usage:
 
-        stack-converter [ [ "/source-map-directory" OR "/source.map.js" ] [ "/stack-trace.txt" ] ]
+        stack-converter [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
     
-    * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to current directory
-    * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to value in clipboard
+    * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to the current directory
+    * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to the value in the clipboard
     
     ❤️ support@bugsplat.com
 ```
-3. Run `stack-converter` and optionally specify a path to a directory containing .map files, path to a single .map file, and a path to a .txt file containing a stringified JavaScript Error. If no options are provided `stack-converter` will default to looking in the current directory for source maps and attempt to read the stringified JavaScript error stack from the system clipboard.
+
+3. Run `stack-converter` and optionally specify a path to a directory containing .js.map files, path to a single .js.map file, and a path to a .txt file containing a stringified JavaScript Error. If no options are provided `stack-converter` will default to looking in the current directory for source maps and attempt to read the stringified JavaScript error stack from the system clipboard.
 
 ## 🧩 API
+
 1. Install this package locally `npm i @bugsplat/stack-converter`
 2. Import `StackConverter` from `@bugsplat/stack-converter`
+
 ```ts
 import { StackConverter } from '@bugsplat/stack-converter';
 ```
+
 3. Create a new instance of `StackConverter` passing it an array of paths to source map files. You can also await the static factory function `createFromDirectory(directory: string): Promise<StackConverter>` which takes a path to a directory and creates a new StackConverter with an array of source map file paths it finds in the specified directory
+
 ```ts
 const converter = new StackConverter(sourceMapFilePaths);
 ```
+
 ```ts
 const converter = await StackConverter.createFromDirectory(directory);
 ```
+
 4. Await the call to convert passing it the stack property from a JavaScript Error object
 ```ts
 const result = await converter.convert(error.stack);

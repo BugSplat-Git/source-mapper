@@ -2,6 +2,7 @@
 /node_modules/
 /build/
 /dist/
+/pkg/
 
 js/*.map
 js/ts.js

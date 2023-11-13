@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-import * as clipboardy from 'clipboardy';
+import clipboard from 'clipboardy';
 import { Stats } from 'fs';
 import * as fs from 'fs/promises';
 import { StackConverter } from '../lib/stack-converter';
@@ -10,16 +10,16 @@ const helpAndExit = () => {
 
         stack-converter command line usage:
 
-            stack-converter [ [ "/source-map-directory" OR "/source.map.js" ] [ "/stack-trace.txt" ] ]
+            stack-converter [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
         
-        * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to current directory
-        * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to value in clipboard
+            * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to the current directory
+            * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to the value in the clipboard
         
         ❤️ support@bugsplat.com
     `;
 
     console.log(help);
-    process.exit(1);
+    process.exit(0);
 };
 
 (async () => {
@@ -29,6 +29,7 @@ const helpAndExit = () => {
             || process.argv.some(arg => arg === '/h')
             || process.argv.some(arg => arg === '-help')
             || process.argv.some(arg => arg === '/help')
+            || process.argv.some(arg => arg === '--help')
         ) {
             helpAndExit();
         }
@@ -41,24 +42,24 @@ const helpAndExit = () => {
         let sourceMapStat: Stats;
         try {
             sourceMapStat = await fs.lstat(sourceMapPath);
-        } catch {
-            throw new Error(`Source map path ${sourceMapPath} does not exist`);
+        } catch (cause) {
+            throw new Error(`Source map path ${sourceMapPath} does not exist`, { cause });
         }
         
         let stackFileContents;
         const stackFilePath = process.argv[3];
         if (!stackFilePath) {
-            stackFileContents = await clipboardy.read();
+            stackFileContents = await clipboard.read();
         } else {
             try {
                 await fs.lstat(stackFilePath);
-            } catch {
-                throw new Error(`Stack file path ${stackFilePath} does not exist`);
+            } catch (cause) {
+                throw new Error(`Stack file path ${stackFilePath} does not exist`, { cause });
             }
             try {
                 stackFileContents = await fs.readFile(stackFilePath, 'utf-8');
-            } catch {
-                throw new Error(`Could not read contents of ${stackFilePath}`);
+            } catch (cause) {
+                throw new Error(`Could not read contents of ${stackFilePath}`, { cause });
             }
         }
 

@@ -127,8 +127,8 @@ export class StackConverter {
                 }
                 const name = originalPosition.name || methodName;
                 buff.push(StackConverter.frameLine(name, originalPosition.source, originalPosition.line, originalPosition.column));
-            } catch (err) {
-                const comment = StackConverter.couldNotConvertStackFrameComment(err.message);
+            } catch (error) {
+                const comment = StackConverter.couldNotConvertStackFrameComment((error as Error).message);
                 buff.push(StackConverter.frameLine(methodName, file, lineNumber, column, comment));
             }
         }
