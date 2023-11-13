@@ -31,15 +31,10 @@ Error: BugSplat rocks!
 ```
 
 ## 🖥 Command Line
-<<<<<<< HEAD
 
-1. Install this package globally `npm i -g @bugsplat/stack-converter`
-2. Run `stack-converter -h` to see the latest usage information:
-
-=======
 1. Install this package globally `npm i -g @bugsplat/source-mapper`
 2. Run `source-mapper -h` to see the latest usage information:
->>>>>>> 0431171 (chore: rename to source-mapper)
+
 ```bash
 bobby@BugSplat % ~ % source-mapper -h
 
