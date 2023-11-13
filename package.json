@@ -1,9 +1,9 @@
 {
-  "name": "@bugsplat/stack-converter",
+  "name": "@bugsplat/source-mapper",
   "version": "1.2.5",
   "main": "./dist/lib/index.js",
   "bin": {
-    "stack-converter": "./dist/bin/index.js"
+    "source-mapper": "./dist/bin/index.js"
   },
   "files": [
     "dist"
@@ -17,12 +17,12 @@
     "prebuild": "rimraf dist",
     "build": "tsc",
     "prepkg": "npm run build",
-    "pkg": "npx pkg -C -o ./pkg/symbol-upload -t node18-macos-x64,node18-linux-x64,node18-win-x64 ./dist/bin/index.js",
+    "pkg": "npx pkg -C -o ./pkg/source-mapper -t node18-macos-x64,node18-linux-x64,node18-win-x64 ./dist/bin/index.js",
     "release": "npm run build && npm publish --access public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BugSplat-Git/stack-converter"
+    "url": "git+https://github.com/BugSplat-Git/source-mapper"
   },
   "license": "MIT",
   "private": false,
@@ -60,10 +60,10 @@
     "@types/lodash": "^4.14.197",
     "@types/node": "^20.5.6",
     "@types/source-map": "^0.5.7",
-    "@typescript-eslint/eslint-plugin": "^6.4.1",
-    "@typescript-eslint/parser": "^6.4.1",
-    "eslint": "^8.48.0",
-    "eslint-plugin-jsdoc": "^46.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.53.0",
+    "eslint-plugin-jsdoc": "^46.9.0",
     "jasmine": "^5.1.0",
     "jasmine-reporters": "^2.5.2",
     "pkg": "^5.8.1",

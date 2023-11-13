@@ -11,16 +11,16 @@
     </a>
 </div>
 
-# 🥞 stack-converter
-`stack-converter` is a utility for translating function names, file names and line numbers in uglified JavaScript Error stack frames to the corresponding values in the original source. `stack-converter` is distributed as both a package and a library and is used by the [BugSplat](https://www.bugsplat.com) backend to deliver crash reporting as a service for JavaScript and TypeScript applications.
+# 🗺️ source-mapper
+`source-mapper` is a utility for translating function names, file names and line numbers in uglified JavaScript Error stack frames to the corresponding values in the original source. `source-mapper` is distributed as both a package and a library and is used by the [BugSplat](https://www.bugsplat.com) backend to deliver crash reporting as a service for JavaScript and TypeScript applications.
 
-The following is an example JavaScript Error stack converted to its TypeScript equivalent using `stack-converter`:
+The following is an example JavaScript Error stack converted to its TypeScript equivalent using `source-mapper`:
 
 ```
 Error: BugSplat rocks!
-    at crash (/Users/bobby/Desktop/bugsplat/stack-converter/dist/bin/cmd.js:16:11)
-    at /Users/bobby/Desktop/bugsplat/stack-converter/dist/bin/cmd.js:6:9
-    at Object.<anonymous> (/Users/bobby/Desktop/bugsplat/stack-converter/dist/bin/cmd.js:14:3)
+    at crash (/Users/bobby/Desktop/bugsplat/source-mapper/dist/bin/cmd.js:16:11)
+    at /Users/bobby/Desktop/bugsplat/source-mapper/dist/bin/cmd.js:6:9
+    at Object.<anonymous> (/Users/bobby/Desktop/bugsplat/source-mapper/dist/bin/cmd.js:14:3)
 ```
 
 ```
@@ -31,18 +31,23 @@ Error: BugSplat rocks!
 ```
 
 ## 🖥 Command Line
+<<<<<<< HEAD
 
 1. Install this package globally `npm i -g @bugsplat/stack-converter`
 2. Run `stack-converter -h` to see the latest usage information:
 
+=======
+1. Install this package globally `npm i -g @bugsplat/source-mapper`
+2. Run `source-mapper -h` to see the latest usage information:
+>>>>>>> 0431171 (chore: rename to source-mapper)
 ```bash
-bobby@BugSplat % ~ % stack-converter -h
+bobby@BugSplat % ~ % source-mapper -h
 
-    @bugsplat/stack-converter contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
+    @bugsplat/source-mapper contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
 
-    stack-converter command line usage:
+    source-mapper command line usage:
 
-        stack-converter [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
+        source-mapper [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
     
     * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to the current directory
     * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to the value in the clipboard
@@ -50,30 +55,30 @@ bobby@BugSplat % ~ % stack-converter -h
     ❤️ support@bugsplat.com
 ```
 
-3. Run `stack-converter` and optionally specify a path to a directory containing .js.map files, path to a single .js.map file, and a path to a .txt file containing a stringified JavaScript Error. If no options are provided `stack-converter` will default to looking in the current directory for source maps and attempt to read the stringified JavaScript error stack from the system clipboard.
+3. Run `source-mapper` and optionally specify a path to a directory containing .js.map files, path to a single .js.map file, and a path to a .txt file containing a stringified JavaScript Error. If no options are provided `source-mapper` will default to looking in the current directory for source maps and attempt to read the stringified JavaScript error stack from the system clipboard.
 
 ## 🧩 API
 
-1. Install this package locally `npm i @bugsplat/stack-converter`
-2. Import `StackConverter` from `@bugsplat/stack-converter`
+1. Install this package locally `npm i @bugsplat/source-mapper`
+2. Import `SourceMapper` from `@bugsplat/source-mapper`
 
 ```ts
-import { StackConverter } from '@bugsplat/stack-converter';
+import { SourceMapper } from '@bugsplat/source-mapper';
 ```
 
-3. Create a new instance of `StackConverter` passing it an array of paths to source map files. You can also await the static factory function `createFromDirectory(directory: string): Promise<StackConverter>` which takes a path to a directory and creates a new StackConverter with an array of source map file paths it finds in the specified directory
+3. Create a new instance of `SourceMapper` passing it an array of paths to source map files. You can also await the static factory function `createFromDirectory(directory: string): Promise<SourceMapper>` which takes a path to a directory and creates a new SourceMapper with an array of source map file paths it finds in the specified directory
 
 ```ts
-const converter = new StackConverter(sourceMapFilePaths);
+const mapper = new SourceMapper(sourceMapFilePaths);
 ```
 
 ```ts
-const converter = await StackConverter.createFromDirectory(directory);
+const mapper = await SourceMapper.createFromDirectory(directory);
 ```
 
 4. Await the call to convert passing it the stack property from a JavaScript Error object
 ```ts
-const result = await converter.convert(error.stack);
+const result = await mapper.convert(error.stack);
 ```
 
 Thanks for using BugSplat!
