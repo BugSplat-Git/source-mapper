@@ -17,7 +17,7 @@
     "prebuild": "rimraf dist",
     "build": "tsc",
     "prepkg": "npm run build",
-    "pkg": "npx pkg -C -o ./pkg/symbol-upload -t node18-macos-x64,node18-linux-x64,node18-win-x64 ./dist/bin/index.js",
+    "pkg": "npx pkg -C -o ./pkg/source-mapper -t node18-macos-x64,node18-linux-x64,node18-win-x64 ./dist/bin/index.js",
     "release": "npm run build && npm publish --access public"
   },
   "repository": {
