@@ -2,15 +2,15 @@
 import clipboard from 'clipboardy';
 import { Stats } from 'fs';
 import * as fs from 'fs/promises';
-import { StackConverter } from '../lib/stack-converter';
+import { SourceMapper } from '../lib/source-mapper';
 
 const helpAndExit = () => {
     const help = `
-        @bugsplat/stack-converter contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
+        @bugsplat/source-mapper contains a command line utility and set of libraries to help you demangle JavaScript stack frames.
 
-        stack-converter command line usage:
+        source-mapper command line usage:
 
-            stack-converter [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
+            source-mapper [ [ "/source-map-directory" OR "/source.js.map" ] [ "/stack-trace.txt" ] ]
         
             * Optionally provide either a path to a directory containing source maps or a .map.js file - Defaults to the current directory
             * Optionally provide a path to a .txt file containing a JavaScript Error stack trace - Defaults to the value in the clipboard
@@ -67,7 +67,7 @@ const helpAndExit = () => {
             throw new Error('Stack contents are empty');
         }
 
-        const converter = sourceMapStat.isDirectory() ? await StackConverter.createFromDirectory(sourceMapPath) : new StackConverter([sourceMapPath]);
+        const converter = sourceMapStat.isDirectory() ? await SourceMapper.createFromDirectory(sourceMapPath) : new SourceMapper([sourceMapPath]);
         const { error, stack } = await converter.convert(stackFileContents);
         if (error) {
             throw new Error(error);

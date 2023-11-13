@@ -1,9 +1,9 @@
 {
-  "name": "@bugsplat/stack-converter",
+  "name": "@bugsplat/source-mapper",
   "version": "1.2.5",
   "main": "./dist/lib/index.js",
   "bin": {
-    "stack-converter": "./dist/bin/index.js"
+    "source-mapper": "./dist/bin/index.js"
   },
   "files": [
     "dist"
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BugSplat-Git/stack-converter"
+    "url": "git+https://github.com/BugSplat-Git/source-mapper"
   },
   "license": "MIT",
   "private": false,

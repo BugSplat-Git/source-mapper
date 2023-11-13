@@ -1,1 +1,1 @@
-export { StackConverter } from './stack-converter';
+export { SourceMapper as SourceMapper } from './source-mapper';

@@ -1,0 +1,11 @@
+TypeError: Bug.Splat is not a function
+    at new _AppComponent (http://127.0.0.1:8080/main.js:15036:22)
+    at NodeInjectorFactory.AppComponent_Factory [as factory] (http://127.0.0.1:8080/main.js:15082:12)
+    at getNodeInjectable (http://127.0.0.1:8080/main.js:4088:38)
+    at createRootComponent (http://127.0.0.1:8080/main.js:9037:31)
+    at ComponentFactory.create (http://127.0.0.1:8080/main.js:8934:19)
+    at _ApplicationRef.bootstrap (http://127.0.0.1:8080/main.js:11341:40)
+    at http://127.0.0.1:8080/main.js:11165:62
+    at Array.forEach (<anonymous>)
+    at _PlatformRef._moduleDoBootstrap (http://127.0.0.1:8080/main.js:11165:40)
+    at http://127.0.0.1:8080/main.js:11136:18
