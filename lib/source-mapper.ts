@@ -1,8 +1,11 @@
 import * as fs from 'fs/promises';
-import { get, set } from 'lodash';
+import { set } from 'lodash';
 import * as path from 'path';
 import { SourceMapConsumer } from 'source-map';
 import * as stackTraceParser from 'stacktrace-parser';
+import { SourceMapManifest, SourceMapManifestEntry, normalizeDebugId, readDebugId } from './manifest';
+
+type LoadedSourceMap = { consumer: SourceMapConsumer, debugId?: string };
 
 /**
  * A class for converting stacktraces, mangled by transpiling, back to match the originating files.
@@ -18,25 +21,33 @@ export class SourceMapper {
      * Create a SourceMapper by passing an array of paths to source map files
      *
      * @param sourceMapFilePaths - an array of paths to source map files for converting stacks
-     * @throws - throws if no sourceMapFilePaths are provided
+     * @param manifest - optional object that states which source map each stack frame file uses
+     * @throws - throws if no sourceMapFilePaths and no manifest are provided
      */
-    constructor(private sourceMapFilePaths: Array<string>) {
-        if (!sourceMapFilePaths?.length) {
+    constructor(private sourceMapFilePaths: Array<string>, private manifest?: SourceMapManifest) {
+        if (!sourceMapFilePaths?.length && !manifest) {
             throw new Error('Could not create SourceMapper: no source map file paths were provided!');
         }
+
+        this.sourceMapFilePaths = sourceMapFilePaths ?? [];
     }
 
     /**
      * Convenience method for creating a SourceMapper from a directory containing source map files
      *
      * @param directory - path to directory containing source map files
-     * @throws - throws if no source map files exist in dir
+     * @param manifest - optional object that states which source map each stack frame file uses
+     * @throws - throws if no manifest is provided and the directory does not exist or contains no source map files
      * @returns - promise that resolves to a new SourceMapper
      */
-    static async createFromDirectory(directory: string): Promise<SourceMapper> {
+    static async createFromDirectory(directory: string, manifest?: SourceMapManifest): Promise<SourceMapper> {
         try {
             await fs.lstat(directory);
         } catch(error) {
+            if (manifest) {
+                return new SourceMapper([], manifest);
+            }
+
             throw new Error(`Could not create SourceMapper: ${directory} does not exist or is inaccessible!`);
         }
 
@@ -44,7 +55,7 @@ export class SourceMapper {
         const sourceMapFilePaths = files
             .filter(file => file.endsWith('.map'))
             .map(file => path.join(directory, file));
-        return new SourceMapper(sourceMapFilePaths);
+        return new SourceMapper(sourceMapFilePaths, manifest);
     }
 
     /**
@@ -64,7 +75,8 @@ export class SourceMapper {
         }
 
         const buff: string[] = [];
-        const sourceMaps: { [filename: string]: SourceMapConsumer } = {};
+        const sourceMaps = new Map<string, LoadedSourceMap>();
+        const mapFiles = new Map<string, string | undefined>();
         const sourceMapErrors: { [filename: string]: boolean } = {};
 
         const errorLine = SourceMapper.getChromiumErrorLineOrEmpty(stack);
@@ -86,7 +98,10 @@ export class SourceMapper {
                 continue;
             }
 
-            const mapFile = this.findMapFileByName(file);
+            if (!mapFiles.has(file)) {
+                mapFiles.set(file, await this.findMapFile(file, sourceMaps));
+            }
+            const mapFile = mapFiles.get(file);
 
             if (!mapFile) {
                 set(sourceMapErrors, file, true);
@@ -102,7 +117,7 @@ export class SourceMapper {
                     continue;
                 }
                 
-                let sourceMapConsumer: SourceMapConsumer = get(sourceMaps, mapFile);
+                let sourceMapConsumer = sourceMaps.get(mapFile)?.consumer;
                 if (!sourceMapConsumer) {
                     const { sourceMap, error } = await SourceMapper.sourceMapFromFile(mapFile);
                     if (!sourceMap || error) {
@@ -111,8 +126,8 @@ export class SourceMapper {
                         buff.push(SourceMapper.frameLine(methodName, file, lineNumber, column, comment));
                         continue;
                     }
-                    sourceMaps[mapFile] = sourceMap;
-                    sourceMapConsumer = sourceMap;
+                    sourceMaps.set(mapFile, sourceMap);
+                    sourceMapConsumer = sourceMap.consumer;
                 }
 
                 const originalPosition = sourceMapConsumer.originalPositionFor({ line: lineNumber, column });
@@ -131,9 +146,52 @@ export class SourceMapper {
         return { stack: buff.join('\n') };
     }
 
+    private async findMapFile(file: string, sourceMaps: Map<string, LoadedSourceMap>): Promise<string | undefined> {
+        const entry = this.manifestEntryFor(file);
+        if (entry && await SourceMapper.manifestEntryIsValid(entry, sourceMaps)) {
+            return entry.map;
+        }
+
+        return this.findMapFileByName(file);
+    }
+
+    private manifestEntryFor(file: string): SourceMapManifestEntry | undefined {
+        if (!this.manifest || !Object.prototype.hasOwnProperty.call(this.manifest, file)) {
+            return undefined;
+        }
+
+        const entry = this.manifest[file];
+        if (!entry || typeof entry.map !== 'string' || !entry.map || !normalizeDebugId(entry.debugId)) {
+            return undefined;
+        }
+
+        return entry;
+    }
+
     private findMapFileByName(file: string): string | undefined {
         const mapFileNames = SourceMapper.mapFileNamesFor(file);
         return this.sourceMapFilePaths.find(mapFilePath => mapFileNames.includes(path.basename(mapFilePath)));
+    }
+
+    // A manifest entry is valid when its source map can be loaded and contains the debug ID the entry states
+    private static async manifestEntryIsValid(entry: SourceMapManifestEntry, sourceMaps: Map<string, LoadedSourceMap>): Promise<boolean> {
+        const debugId = normalizeDebugId(entry.debugId);
+        const loaded = sourceMaps.get(entry.map);
+        if (loaded) {
+            return loaded.debugId === debugId;
+        }
+
+        try {
+            const { sourceMap } = await SourceMapper.sourceMapFromFile(entry.map, debugId);
+            if (!sourceMap) {
+                return false;
+            }
+
+            sourceMaps.set(entry.map, sourceMap);
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     // The names a source map for the frame's file can have: the file's base name, without query string and fragment, followed by .map
@@ -176,7 +234,7 @@ export class SourceMapper {
         return '';
     }
 
-    private static async sourceMapFromFile(file: string): Promise<{sourceMap?: SourceMapConsumer, error?: string}> {
+    private static async sourceMapFromFile(file: string, expectedDebugId?: string): Promise<{sourceMap?: LoadedSourceMap, error?: string}> {
         if (!file) {
             return { error: 'file name was empty' };
         }
@@ -194,8 +252,13 @@ export class SourceMapper {
 
         try {
             const parsedSourceMap = JSON.parse(fileData);
-            const sourceMap = await new SourceMapConsumer(parsedSourceMap);
-            return { sourceMap };
+            const debugId = readDebugId(parsedSourceMap);
+            if (expectedDebugId && debugId !== expectedDebugId) {
+                return { error: `file ${file} does not contain debug id ${expectedDebugId}` };
+            }
+
+            const consumer = await new SourceMapConsumer(parsedSourceMap);
+            return { sourceMap: { consumer, debugId } };
         } catch(error) {
             return { error: 'could not parse source map' };
         }
