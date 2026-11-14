@@ -3,6 +3,7 @@
     "spec_files": [
       "**/*.spec.ts"
     ],
+    "jsLoader": "require",
     "stopSpecOnExpectationFailure": false,
     "random": true
   }
