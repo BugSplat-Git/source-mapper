@@ -59,7 +59,7 @@ bobby@BugSplat % ~ % source-mapper -h
 
 ### Matching by file name
 
-`source-mapper` matches a stack frame to a source map by file name. The frame `at f (https://example.com/assets/main.js?v=2:1:2345)` uses the source map named `main.js.map`: the base name of the frame's file, without the query string and fragment, followed by `.map`. The name must match exactly, so `domain.js.map` is not used for `main.js`. `source-mapper` only looks at the files directly inside the source map directory, not at files in its subdirectories.
+`source-mapper` matches a stack frame to a source map by file name. The frame `at f (https://example.com/assets/main.js?v=2:1:2345)` uses the source map named `main.js.map`: the base name of the frame's file, without the query string and fragment, followed by `.map`. The whole name must match, so `domain.js.map` is not used for `main.js`. A source map whose name has the same letter case as the frame's file is used first; if there is none, the name is compared without regard to letter case, and the frame is left unconverted if more than one source map matches that way. `source-mapper` only looks at the files directly inside the source map directory, not at files in its subdirectories.
 
 A frame that has no source map is copied to the output followed by `***Error loading source map for frame (source map not found)`.
 

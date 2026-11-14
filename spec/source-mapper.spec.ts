@@ -326,6 +326,61 @@ describe('SourceMapper', () => {
     });
   });
 
+  describe('convert matching source maps by file name without regard to letter case', () => {
+    const byNameMap = path.join(BY_NAME_DIR, 'index-BX3k.js.map');
+    const frame = `    at fail (${CHECKOUT_FILE}:2:11)`;
+
+    it('uses a source map with a lowercased name for a frame file with a mixed case name', async () => {
+      const sourceMapper = new SourceMapper([CHECKOUT_MAP]);
+      const { stack } = await sourceMapper.convert(frame);
+      expect(stack).toEqual('    at fail (../src/checkout.ts:2:8)');
+    });
+
+    it('uses a source map with a lowercased name found by createFromDirectory', async () => {
+      const sourceMapper = await SourceMapper.createFromDirectory(path.dirname(CART_MAP));
+      const { stack } = await sourceMapper.convert(readStack(path.join(DEBUG_IDS_DIR, 'stack.txt')));
+      expect(stack).toEqual([
+        'Error: Order failed: 42',
+        '    at fail (../src/cart.ts:2:8)',
+        '    at run (../src/cart.ts:6:2)',
+        '    at fail (../src/cart.ts:2:8)',
+        `    at HTMLButtonElement.<anonymous> (https://example.com/assets/vendor-Q9zT.js:1:2345)  ${NOT_FOUND}`
+      ].join('\n'));
+    });
+
+    it('uses a source map with a mixed case name for a frame file with a lowercased name', async () => {
+      const sourceMapper = new SourceMapper([byNameMap]);
+      const { stack } = await sourceMapper.convert('    at fail (https://example.com/assets/index-bx3k.js:2:11)');
+      expect(stack).toEqual('    at fail (../src/legacy.ts:2:8)');
+    });
+
+    it('prefers a source map whose name has the same case as the frame file', async () => {
+      const sourceMapper = new SourceMapper([CHECKOUT_MAP, byNameMap, CART_MAP]);
+      const { stack } = await sourceMapper.convert(frame);
+      expect(stack).toEqual('    at fail (../src/legacy.ts:2:8)');
+    });
+
+    it('reports source map not found if more than one source map matches without regard to letter case', async () => {
+      const sourceMapper = new SourceMapper([CHECKOUT_MAP, CART_MAP]);
+      const { error, stack } = await sourceMapper.convert(frame);
+      expect(error).toBeUndefined();
+      expect(stack).toEqual(`${frame}  ${NOT_FOUND}`);
+    });
+
+    it('uses a source map that is listed more than once', async () => {
+      const sourceMapper = new SourceMapper([CHECKOUT_MAP, CHECKOUT_MAP]);
+      const { stack } = await sourceMapper.convert(frame);
+      expect(stack).toEqual('    at fail (../src/checkout.ts:2:8)');
+    });
+
+    it('does not use a source map whose name ends with the name of the source map for the frame', async () => {
+      const sourceMapper = new SourceMapper([CHECKOUT_MAP]);
+      const otherFrame = '    at fail (https://example.com/assets/BX3k.js:2:11)';
+      const { stack } = await sourceMapper.convert(otherFrame);
+      expect(stack).toEqual(`${otherFrame}  ${NOT_FOUND}`);
+    });
+  });
+
   describe('convert with manifest', () => {
     const stackText = readStack(path.join(DEBUG_IDS_DIR, 'stack.txt'));
     const vendorFrame = `    at HTMLButtonElement.<anonymous> (https://example.com/assets/vendor-Q9zT.js:1:2345)  ${NOT_FOUND}`;
@@ -453,9 +508,10 @@ describe('SourceMapper', () => {
     });
 
     it('verifies the debug ID of a source map that was already loaded for another frame file', async () => {
-      const sourceMapper = new SourceMapper([CHECKOUT_MAP], { [CHECKOUT_FILE]: { map: CHECKOUT_MAP, debugId: CART_DEBUG_ID } });
-      const { stack } = await sourceMapper.convert('    at fail (https://example.com/index-bx3k.js:2:11)\n    at fail (https://example.com/assets/index-BX3k.js:2:11)');
-      expect(stack).toEqual(`    at fail (../src/checkout.ts:2:8)\n    at fail (${CHECKOUT_FILE}:2:11)  ${NOT_FOUND}`);
+      const renamedFile = 'https://example.com/assets/renamed.js';
+      const sourceMapper = new SourceMapper([CHECKOUT_MAP], { [renamedFile]: { map: CHECKOUT_MAP, debugId: CART_DEBUG_ID } });
+      const { stack } = await sourceMapper.convert(`    at fail (https://example.com/index-bx3k.js:2:11)\n    at fail (${renamedFile}:2:11)`);
+      expect(stack).toEqual(`    at fail (../src/checkout.ts:2:8)\n    at fail (${renamedFile}:2:11)  ${NOT_FOUND}`);
     });
   });
 });

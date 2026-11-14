@@ -78,6 +78,19 @@ describe('source-mapper command line', () => {
     expect(stdout).toContain('    at run (../src/legacy.ts:6:2)\n');
   });
 
+  it('converts a stack with a source map directory that contains a source map with a lowercased name', async () => {
+    const { code, stdout } = await run(path.dirname(CHECKOUT_MAP), STACK_FILE);
+    expect(code).toEqual(0);
+    expect(stdout).toEqual([
+      'Error: Order failed: 42',
+      '    at fail (../src/checkout.ts:2:8)',
+      '    at run (../src/checkout.ts:6:2)',
+      '    at fail (../src/checkout.ts:2:8)',
+      VENDOR_FRAME,
+      ''
+    ].join('\n'));
+  });
+
   it('converts a stack with a source map directory, a stack file and a manifest', async () => {
     const { code, stdout } = await run(BY_NAME_DIR, STACK_FILE, manifestFile);
     expect(code).toEqual(0);

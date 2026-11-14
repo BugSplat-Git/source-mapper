@@ -168,9 +168,20 @@ export class SourceMapper {
         return entry;
     }
 
+    // An exact match of the source map's base name wins. Otherwise the base name is compared without regard to letter case,
+    // and a frame that matches more than one source map that way is left unmatched instead of guessing.
     private findMapFileByName(file: string): string | undefined {
         const mapFileNames = SourceMapper.mapFileNamesFor(file);
-        return this.sourceMapFilePaths.find(mapFilePath => mapFileNames.includes(path.basename(mapFilePath)));
+        const exactMatch = this.sourceMapFilePaths.find(mapFilePath => mapFileNames.includes(path.basename(mapFilePath)));
+        if (exactMatch) {
+            return exactMatch;
+        }
+
+        const lowerCaseMapFileNames = mapFileNames.map(mapFileName => mapFileName.toLowerCase());
+        const caseInsensitiveMatches = new Set(
+            this.sourceMapFilePaths.filter(mapFilePath => lowerCaseMapFileNames.includes(path.basename(mapFilePath).toLowerCase()))
+        );
+        return caseInsensitiveMatches.size === 1 ? [...caseInsensitiveMatches][0] : undefined;
     }
 
     // A manifest entry is valid when its source map can be loaded and contains the debug ID the entry states
