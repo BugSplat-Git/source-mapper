@@ -1,9 +1,11 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { SourceMapper } from '../lib/source-mapper';
 
 const TESTING_DIR = 'spec';
 const TESTING_DATA_DIR = path.join(TESTING_DIR, 'test-data');
+const NOT_FOUND = '***Error loading source map for frame (source map not found)';
 
 const readStack = (file: string): string => {
   return fs.readFileSync(file, {
@@ -209,6 +211,94 @@ describe('SourceMapper', () => {
             at executor (webpack:///node_modules/zone.js/dist/zone-evergreen.js:960:32)`
           )
         );
+    });
+  });
+
+  describe('convert matching source maps by file name', () => {
+    const mainMap = path.join(TESTING_DATA_DIR, 'angular', 'main.js.map');
+    const stack1Map = path.join(TESTING_DATA_DIR, 'stack-1.js.map');
+    const mainFrame = (file: string) => `    at new _AppComponent (${file}:15036:22)`;
+    const mainFrameConverted = '    at TypeError (projects/my-angular-crasher/src/app/app.component.ts:33:4)';
+
+    it('does not use the source map of a file named in the query string of another file', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const frame = mainFrame('http://127.0.0.1:8080/other.js?next=/v2/main.js');
+      const { stack } = await sourceMapper.convert(frame);
+      expect(stack).toEqual(`${frame}  ${NOT_FOUND}`);
+    });
+
+    it('does not use a source map whose name ends with the name of the source map for the frame', async () => {
+      // k-1.js.map is a substring of stack-1.js.map, the same way a.js.map is a substring of data.js.map
+      const sourceMapper = new SourceMapper([stack1Map]);
+      const frame = '    at e.onButtonClick (http://localhost:8080/k-1.js:1:141012)';
+      const { stack } = await sourceMapper.convert(frame);
+      expect(stack).toEqual(`${frame}  ${NOT_FOUND}`);
+    });
+
+    it('does not use a source map in a directory whose name matches the frame', async () => {
+      const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'source-mapper-'));
+      try {
+        const mapFile = path.join(directory, 'main.js.map', 'other.js.map');
+        fs.mkdirSync(path.dirname(mapFile));
+        fs.copyFileSync(mainMap, mapFile);
+        const sourceMapper = new SourceMapper([mapFile]);
+        const frame = mainFrame('http://127.0.0.1:8080/main.js');
+        const { stack } = await sourceMapper.convert(frame);
+        expect(stack).toEqual(`${frame}  ${NOT_FOUND}`);
+      } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+      }
+    });
+
+    it('ignores the query string of a url', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const { stack } = await sourceMapper.convert(mainFrame('http://127.0.0.1:8080/main.js?v=1.2.3&next=/a/b.js'));
+      expect(stack).toEqual(mainFrameConverted);
+    });
+
+    it('ignores the fragment of a url', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const { stack } = await sourceMapper.convert(mainFrame('http://127.0.0.1:8080/main.js#/route/a.js'));
+      expect(stack).toEqual(mainFrameConverted);
+    });
+
+    it('ignores the query string and fragment of a url', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const { stack } = await sourceMapper.convert(mainFrame('http://127.0.0.1:8080/main.js?v=1#top'));
+      expect(stack).toEqual(mainFrameConverted);
+    });
+
+    it('ignores the query string of a file without a url scheme', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const { stack } = await sourceMapper.convert(mainFrame('main.js?v=1'));
+      expect(stack).toEqual(mainFrameConverted);
+    });
+
+    it('treats # as part of a posix path', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const { stack } = await sourceMapper.convert(mainFrame('/home/bobby/c#/dist/main.js'));
+      expect(stack).toEqual(mainFrameConverted);
+    });
+
+    it('treats # as part of a win32 path', async () => {
+      const sourceMapper = new SourceMapper([mainMap]);
+      const { stack } = await sourceMapper.convert(mainFrame('C:\\dev\\c#\\dist\\main.js'));
+      expect(stack).toEqual(mainFrameConverted);
+    });
+
+    ['mjs', 'cjs'].forEach(extension => {
+      it(`matches a .${extension} file to a .${extension}.map file`, async () => {
+        const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'source-mapper-'));
+        try {
+          fs.copyFileSync(mainMap, path.join(directory, `main.${extension}.map`));
+          fs.copyFileSync(stack1Map, path.join(directory, 'main.js.map'));
+          const sourceMapper = await SourceMapper.createFromDirectory(directory);
+          const { stack } = await sourceMapper.convert(mainFrame(`http://127.0.0.1:8080/main.${extension}?v=1`));
+          expect(stack).toEqual(mainFrameConverted);
+        } finally {
+          fs.rmSync(directory, { recursive: true, force: true });
+        }
+      });
     });
   });
 });

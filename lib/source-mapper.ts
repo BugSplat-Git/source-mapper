@@ -86,11 +86,7 @@ export class SourceMapper {
                 continue;
             }
 
-            const mapFile = this.sourceMapFilePaths.find(mapFilePath => {
-                const posix = mapFilePath.includes(`${path.posix.basename(file)}.map`);
-                const win32 = mapFilePath.includes(`${path.win32.basename(file)}.map`);
-                return posix || win32;
-            });
+            const mapFile = this.findMapFileByName(file);
 
             if (!mapFile) {
                 set(sourceMapErrors, file, true);
@@ -133,6 +129,25 @@ export class SourceMapper {
             }
         }
         return { stack: buff.join('\n') };
+    }
+
+    private findMapFileByName(file: string): string | undefined {
+        const mapFileNames = SourceMapper.mapFileNamesFor(file);
+        return this.sourceMapFilePaths.find(mapFilePath => mapFileNames.includes(path.basename(mapFilePath)));
+    }
+
+    // The names a source map for the frame's file can have: the file's base name, without query string and fragment, followed by .map
+    private static mapFileNamesFor(file: string): Array<string> {
+        const filePath = SourceMapper.stripQueryAndFragment(file);
+        const baseNames = [path.posix.basename(filePath), path.win32.basename(filePath)];
+        return baseNames.filter(baseName => !!baseName).map(baseName => `${baseName}.map`);
+    }
+
+    // In a URL both ? and # end the path. In a file system path # is an ordinary character (C:\dev\c#\app.js), so only ? ends the path.
+    private static stripQueryAndFragment(file: string): string {
+        const isUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(file);
+        const end = file.search(isUrl ? /[?#]/ : /\?/);
+        return end === -1 ? file : file.substring(0, end);
     }
 
     private static couldNotConvertStackFrameComment(comment: string): string {
