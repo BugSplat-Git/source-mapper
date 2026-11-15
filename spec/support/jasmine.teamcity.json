@@ -6,6 +6,7 @@
     "helpers": [
         "./support/teamcity.ts"
     ],
+    "jsLoader": "require",
     "stopSpecOnExpectationFailure": false,
     "random": true
   }

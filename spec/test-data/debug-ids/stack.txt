@@ -1,0 +1,5 @@
+Error: Order failed: 42
+    at fail (https://example.com/assets/index-BX3k.js:2:11)
+    at run (https://example.com/assets/index-BX3k.js:5:5)
+    at fail (https://example.com/admin/assets/index-BX3k.js?v=7:2:11)
+    at HTMLButtonElement.<anonymous> (https://example.com/assets/vendor-Q9zT.js:1:2345)
